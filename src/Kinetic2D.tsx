@@ -4,6 +4,8 @@ import {
   FormulaComponent,
   FormulizeProvider,
   VisualizationComponent,
+  InlineFormula,
+  InlineVariable,
   type FormulizeConfig,
 } from "formulize-math";
 
@@ -22,13 +24,13 @@ const kineticConfig: FormulizeConfig = {
   ],
   variables: {
     K: {
-      type: "dependent",
+      role: "computed",
       units: "J",
       name: "Kinetic Energy",
       precision: 2,
     },
     m: {
-      type: "input",
+      role: "input",
       value: 1,
       range: [0.1, 10],
       step: 1,
@@ -36,7 +38,7 @@ const kineticConfig: FormulizeConfig = {
       name: "Mass",
     },
     v: {
-      type: "input",
+      role: "input",
       value: 2,
       range: [0.1, 100],
       step: 1,
@@ -50,8 +52,8 @@ const kineticConfig: FormulizeConfig = {
   visualizations: [
     {
       type: "plot2d" as const,
-      xAxisVar: "v",
-      yAxisVar: "K",
+      xAxis: "v",
+      yAxis: "K",
       height: 400,
       width: 400,
       lines: [
@@ -69,13 +71,13 @@ export const Kinetic2DExample: React.FC = () => {
     <FormulizeProvider config={kineticConfig}>
       <div className="mb-4">
         <h2 className="text-2xl font-bold mb-2">Kinetic Energy</h2>
-        <p className="text-blue-700 leading-relaxed">
-          Kinetic energy is the energy possessed by an object due to its motion.
-          The formula shows that kinetic energy is directly proportional to the
-          mass of the object and the square of its velocity. This means that
-          doubling the velocity quadruples the kinetic energy, making speed a
-          much more significant factor than mass in determining how much energy
-          a moving object has.
+        <p className="text-black-700 leading-relaxed">
+          The kinetic energy formula <InlineFormula id="kinetic-energy" scale={1.0} /> shows
+          that energy depends on both mass and velocity. With
+          mass <InlineVariable id="m" display="withUnits" /> and
+          velocity <InlineVariable id="v" display="withUnits" />, the kinetic
+          energy is <InlineVariable id="K" display="withUnits" />. Doubling
+          velocity quadruples the energy, while doubling mass only doubles it.
         </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
