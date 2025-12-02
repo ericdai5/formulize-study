@@ -25,7 +25,7 @@ const kineticConfig: FormulizeConfig = {
     },
     m: {
       role: "input",
-      value: 1,
+      default: 1,
       range: [0.1, 10],
       step: 1,
       units: "kg",
@@ -33,14 +33,14 @@ const kineticConfig: FormulizeConfig = {
     },
     v: {
       role: "input",
-      value: 2,
+      default: 2,
       range: [0.1, 100],
       step: 1,
       units: "m/s",
       name: "Velocity",
     },
   },
-  computation: {
+  semantics: {
     engine: "manual",
     expressions: {
       "kinetic-energy": "{K} = 0.5 * {m} * {v} * {v}",
