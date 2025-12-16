@@ -1,10 +1,56 @@
+import { useState } from 'react'
 import './App.css'
 import Kinetic2DExample from './Kinetic2D'
+import BayesVisualizationExample from './BayesVisualization'
+import MinimalSummation from './MinimalSummation'
 
 function App() {
+  const [activeExample, setActiveExample] = useState<'kinetic' | 'bayes' | 'summation'>('summation')
+
   return (
     <div className="App">
-      <Kinetic2DExample />
+      <div className="flex gap-4 p-4 border-b">
+        <button
+          onClick={() => setActiveExample('kinetic')}
+          className={`px-4 py-2 rounded ${
+            activeExample === 'kinetic'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700'
+          }`}
+        >
+          Kinetic Energy
+        </button>
+        <button
+          onClick={() => setActiveExample('bayes')}
+          className={`px-4 py-2 rounded ${
+            activeExample === 'bayes'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700'
+          }`}
+        >
+          Bayes Theorem
+        </button>
+        <button
+          onClick={() => setActiveExample('summation')}
+          className={`px-4 py-2 rounded ${
+            activeExample === 'summation'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700'
+          }`}
+        >
+          Summation
+        </button>
+      </div>
+
+      <div className="p-4">
+        {activeExample === 'kinetic' ? (
+          <Kinetic2DExample />
+        ) : activeExample === 'bayes' ? (
+          <BayesVisualizationExample />
+        ) : (
+          <MinimalSummation />
+        )}
+      </div>
     </div>
   )
 }
