@@ -1,10 +1,10 @@
 import './App.css'
-import Kinetic2DExample from './Kinetic2D'
+import NeuralNetworkExample from './NeuralNetwork'
 
 function App() {
   return (
     <div className="App">
-      <Kinetic2DExample />
+      <NeuralNetworkExample />
     </div>
   )
 }
