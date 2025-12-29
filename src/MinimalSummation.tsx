@@ -3,6 +3,7 @@ import {
   FormulaComponent,
   FormulizeProvider,
   InterpreterControl,
+  view,
   type FormulizeConfig,
 } from "formulize-math";
 
@@ -10,13 +11,14 @@ const config: FormulizeConfig = {
   formulas: [
     {
       id: "summation-basic",
-      latex: "E = \\sum_{x \\in X} x \\cdot P(x)",
+      latex: "E = \\sum_{x \\in X} x P(x)",
     },
   ],
   variables: {
     E: {
       role: "computed",
       precision: 2,
+      default: 0,
       name: "Expected Value",
       latexDisplay: "name",
       labelDisplay: "value",
@@ -31,13 +33,13 @@ const config: FormulizeConfig = {
     },
     X: {
       role: "input",
-      default: [1, 2, 3, 4, 5, 6],
+      default: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       precision: 0,
     },
     "P(x)": {
       role: "input",
       key: "x",
-      default: [0.1, 0.15, 0.2, 0.25, 0.2, 0.1],
+      default: [0.05, 0.08, 0.12, 0.15, 0.2, 0.18, 0.12, 0.06, 0.03, 0.01],
       precision: 2,
       name: "Probability of x",
       latexDisplay: "name",
@@ -46,7 +48,7 @@ const config: FormulizeConfig = {
     c: {
       role: "computed",
       precision: 2,
-      name: "Current Term",
+      name: "Current Expected Value",
       latexDisplay: "name",
       labelDisplay: "value",
     },
@@ -57,22 +59,32 @@ const config: FormulizeConfig = {
     manual: function (vars) {
       var xValues = vars.X;
       var pxValues = vars["P(x)"];
-      var expectedValue = 0;
+      var expectedValue = vars.E;
       for (var i = 0; i < xValues.length; i++) {
         var xi = xValues[i];
         var probability = pxValues[i];
-        var currExpected = xi * probability;
-        // @view "x P(x)"->"The expected value for x should be:"->"currExpected"
-        expectedValue += currExpected;
-        // @view "E"->"Expected value E is updated"->"expectedValue"
+        if (i === 0) {
+          view("Get a value x from X:", xi);
+          view("Get a value P(x) from P(x):", probability);
+        }
+        var currExpected = Math.round(xi * probability * 100) / 100;
+        if (i === 0) {
+          view("This evaluates to:", currExpected);
+        }
+        expectedValue = Math.round((expectedValue + currExpected) * 100) / 100;
+        switch (i) {
+          case 0:
+            view("add up term into E:", expectedValue);
+            break;
+          case 1:
+            view("add next term...", expectedValue);
+            break;
+          case xValues.length - 1:
+            view("finish accumulating weighted sum:", expectedValue);
+            break;
+        }
       }
       return expectedValue;
-    },
-    variableLinkage: {
-      xi: "x",
-      probability: "P(x)",
-      expectedValue: "E",
-      currExpected: "c",
     },
   },
   fontSize: 1.5,
