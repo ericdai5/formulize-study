@@ -1,58 +1,82 @@
-import { useState } from 'react'
-import './App.css'
-import Kinetic2DExample from './Kinetic2D'
-import BayesVisualizationExample from './BayesVisualization'
-import MinimalSummation from './MinimalSummation'
+import { useState } from "react";
+import "./App.css";
+import Kinetic2DExample from "./Kinetic2D";
+import BayesVisualizationExample from "./BayesVisualization";
+import MinimalSummation from "./MinimalSummation";
 
 function App() {
-  const [activeExample, setActiveExample] = useState<'kinetic' | 'bayes' | 'summation'>('summation')
+  const [activeExample, setActiveExample] = useState<
+    "kinetic" | "bayes" | "summation"
+  >("summation");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const examples = [
+    { id: "kinetic", label: "Kinetic Energy" },
+    { id: "bayes", label: "Bayes Theorem" },
+    { id: "summation", label: "Summation" },
+  ];
+
+  const currentExample = examples.find((ex) => ex.id === activeExample);
 
   return (
-    <div className="App">
-      <div className="flex gap-4 p-4 border-b">
+    <div className="relative min-h-screen">
+      {/* Dropdown Menu - using fixed positioning to escape container constraints */}
+      <div className="fixed top-4 left-4 z-50">
         <button
-          onClick={() => setActiveExample('kinetic')}
-          className={`px-4 py-2 rounded ${
-            activeExample === 'kinetic'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
-          }`}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="w-10 h-10 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+          title={currentExample?.label}
         >
-          Kinetic Energy
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
         </button>
-        <button
-          onClick={() => setActiveExample('bayes')}
-          className={`px-4 py-2 rounded ${
-            activeExample === 'bayes'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
-          }`}
-        >
-          Bayes Theorem
-        </button>
-        <button
-          onClick={() => setActiveExample('summation')}
-          className={`px-4 py-2 rounded ${
-            activeExample === 'summation'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
-          }`}
-        >
-          Summation
-        </button>
+
+        {dropdownOpen && (
+          <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden min-w-[200px]">
+            {examples.map((example) => (
+              <button
+                key={example.id}
+                onClick={() => {
+                  setActiveExample(
+                    example.id as "kinetic" | "bayes" | "summation"
+                  );
+                  setDropdownOpen(false);
+                }}
+                className={`block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors whitespace-nowrap ${
+                  activeExample === example.id
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-700"
+                }`}
+              >
+                {example.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="p-4">
-        {activeExample === 'kinetic' ? (
+      <div className="w-full h-screen">
+        {activeExample === "kinetic" ? (
           <Kinetic2DExample />
-        ) : activeExample === 'bayes' ? (
+        ) : activeExample === "bayes" ? (
           <BayesVisualizationExample />
         ) : (
           <MinimalSummation />
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
