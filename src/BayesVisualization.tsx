@@ -138,8 +138,6 @@ const bayesConfig: FormulizeConfig = {
       },
     },
   ],
-  fontSize: 1.5,
-  labelFontSize: 1.2,
 };
 
 // BayesProbabilityChart - Custom visualization component
