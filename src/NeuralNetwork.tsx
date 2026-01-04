@@ -312,9 +312,18 @@ function generateNeuralNetwork(layers: number[]) {
       variables[`z_${i}_${l}`] = { role: "computed", precision: 3 };
       variables[`h_${i}_${l}`] = { role: "computed", precision: 3 };
 
-      // Formula for h: shows the full computation
-      const prevSymbol = l === 1 ? "x" : `h^{(${l - 1})}`;
-      const latex = `h_{${i}}^{(${l})} = \\text{ReLU}\\left(\\sum_{j=1}^{${prevSize}} w_{${i}j}^{(${l})} ${prevSymbol}_j + b_{${i}}^{(${l})}\\right)`;
+      // Formula for h: shows the full computation with expanded terms
+      // Each term explicitly references the actual variable IDs so they can be interactive
+      const terms: string[] = [];
+      for (let j = 1; j <= prevSize; j++) {
+        // Use variable IDs that match what's registered (e.g., w_{1,1,1} for w_1_1_1)
+        const weightVar = `w_{${i},${j},${l}}`;
+        const inputVar = l === 1 ? `x_{${j}}` : `h_{${j},${l - 1}}`;
+        terms.push(`${weightVar} \\cdot ${inputVar}`);
+      }
+      const biasVar = `b_{${i},${l}}`;
+      const sumExpr = terms.join(" + ");
+      const latex = `h_{${i},${l}} = \\text{ReLU}\\left(${sumExpr} + ${biasVar}\\right)`;
 
       formulas.push({
         id: `formula_h_${i}_${l}`,
@@ -428,7 +437,10 @@ export const NeuralNetworkExample: React.FC = () => {
             Drag input values (x, weights, biases) in this formula to see the network update:
           </p>
           <div className="bg-gray-50 rounded-lg p-4">
-            <FormulaComponent id="formula_h_1_1" style={{ height: "120px" }} />
+            <FormulaComponent 
+              id="formula_h_1_1" 
+              style={{ height: "300px", width: "100%" }} 
+            />
           </div>
         </div>
 
