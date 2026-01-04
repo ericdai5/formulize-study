@@ -32,13 +32,12 @@ const relu = (x: number) => Math.max(0, x);
 
 // Layout constants
 const VIZ_CONFIG = {
-  width: 800,
-  height: 480,
-  nodeRadius: 22,
-  layerSpacing: 170,
-  nodeSpacing: 65,
-  formulaWidth: 100,
-  formulaHeight: 30,
+  width: 1200,
+  height: 700,
+  nodeRadius: 30,
+  formulaWidth: 180,
+  formulaHeight: 45,
+  padding: 80, // padding from edges
 };
 
 const COLORS = {
@@ -75,19 +74,24 @@ const NeuralNetworkViz: React.FC<NeuralNetworkVizProps> = ({ context }) => {
 
   const layers: number[] = (context.config as any)?.layers || LAYERS;
 
-  // Build node positions
+  // Build node positions - spread across available space
   useEffect(() => {
     const nodeList: NodeInfo[] = [];
-    const totalWidth = (layers.length - 1) * VIZ_CONFIG.layerSpacing;
-    const startX = (VIZ_CONFIG.width - totalWidth) / 2;
+    const padding = VIZ_CONFIG.padding;
+    const usableWidth = VIZ_CONFIG.width - 2 * padding;
+    const usableHeight = VIZ_CONFIG.height - 2 * padding - 40; // extra for labels at bottom
+
+    // Calculate horizontal spacing to fill width
+    const layerSpacing = usableWidth / (layers.length - 1);
 
     layers.forEach((layerSize, layerIdx) => {
-      const totalHeight = (layerSize - 1) * VIZ_CONFIG.nodeSpacing;
-      const startY = (VIZ_CONFIG.height - totalHeight) / 2;
+      // Calculate vertical spacing for this layer to fill height
+      const nodeSpacing = layerSize > 1 ? usableHeight / (layerSize - 1) : 0;
+      const startY = layerSize > 1 ? padding + 30 : VIZ_CONFIG.height / 2; // +30 for formula above
 
       for (let unit = 1; unit <= layerSize; unit++) {
-        const x = startX + layerIdx * VIZ_CONFIG.layerSpacing;
-        const y = startY + (unit - 1) * VIZ_CONFIG.nodeSpacing;
+        const x = padding + layerIdx * layerSpacing;
+        const y = layerSize > 1 ? startY + (unit - 1) * nodeSpacing : startY;
 
         const variableId = layerIdx === 0 ? `x_${unit}` : `h_${unit}_${layerIdx}`;
         const formulaId = layerIdx === 0 ? undefined : `formula_h_${unit}_${layerIdx}`;
@@ -195,25 +199,27 @@ const NeuralNetworkViz: React.FC<NeuralNetworkVizProps> = ({ context }) => {
                     <EmbeddedFormula
                       id={node.formulaId}
                       abbreviation={getAbbreviation(node)}
-                      scale={0.6}
+                      scale={0.9}
                       highlightOnHover={true}
+                      allowPinning={false}
                       style={{
                         backgroundColor: "rgba(255,255,255,0.95)",
-                        borderRadius: "3px",
-                        padding: "1px 3px",
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                        borderRadius: "4px",
+                        padding: "4px 8px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                       }}
                     />
                   ) : (
                     <EmbeddedFormula
                       id={`input_display_${node.variableId}`}
                       latex={getAbbreviation(node)}
-                      scale={0.6}
+                      scale={0.9}
                       highlightOnHover={false}
+                      allowPinning={false}
                       style={{
                         backgroundColor: "rgba(255,255,255,0.95)",
-                        borderRadius: "3px",
-                        padding: "1px 3px",
+                        borderRadius: "4px",
+                        padding: "4px 8px",
                       }}
                     />
                   )}
@@ -229,7 +235,7 @@ const NeuralNetworkViz: React.FC<NeuralNetworkVizProps> = ({ context }) => {
               />
 
               {/* Value inside */}
-              <text y={4} textAnchor="middle" fontSize="10px" fontWeight="bold" fill="white" style={{ pointerEvents: "none" }}>
+              <text y={5} textAnchor="middle" fontSize="14px" fontWeight="bold" fill="white" style={{ pointerEvents: "none" }}>
                 {displayVal}
               </text>
             </g>
@@ -240,11 +246,13 @@ const NeuralNetworkViz: React.FC<NeuralNetworkVizProps> = ({ context }) => {
       {/* Layer labels */}
       <g className="labels">
         {layers.map((_, i) => {
-          const totalW = (layers.length - 1) * VIZ_CONFIG.layerSpacing;
-          const x = (VIZ_CONFIG.width - totalW) / 2 + i * VIZ_CONFIG.layerSpacing;
+          const padding = VIZ_CONFIG.padding;
+          const usableWidth = VIZ_CONFIG.width - 2 * padding;
+          const layerSpacing = usableWidth / (layers.length - 1);
+          const x = padding + i * layerSpacing;
           const label = i === 0 ? "Input" : i === layers.length - 1 ? "Output" : `Hidden ${i}`;
           return (
-            <text key={i} x={x} y={VIZ_CONFIG.height - 12} textAnchor="middle" fontSize="11px" fill="#666">
+            <text key={i} x={x} y={VIZ_CONFIG.height - 15} textAnchor="middle" fontSize="15px" fontWeight="500" fill="#555">
               {label}
             </text>
           );
@@ -382,73 +390,132 @@ export const NeuralNetworkExample: React.FC = () => {
 
   return (
     <FormulizeProvider config={config}>
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-4">Neural Network Forward Pass</h1>
+      <div className="max-w-7xl mx-auto p-6">
+        <h1 className="text-4xl font-bold mb-2">Understanding Neural Networks</h1>
+        <p className="text-xl text-gray-500 mb-8">An interactive exploration of the forward pass</p>
 
-        <p className="text-gray-700 mb-6">
-          This {LAYERS.join(" → ")} network demonstrates <strong>programmatic formula generation</strong>.
-          Each node shows a computed activation value. <strong>Hover over formulas above nodes</strong> to
-          see the full equation, and <strong>drag input values</strong> in the expanded formulas to change them.
-        </p>
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            You've probably heard that neural networks are complicated. They're not, really. The
+            basic idea is almost disappointingly simple: multiply some numbers together, add them
+            up, and squash the result. That's it. The magic comes from doing this thousands of
+            times across layers of interconnected nodes.
+          </p>
 
-        {/* Visualization - uses VisualizationComponent which handles reactivity */}
-        <div className="mb-8">
+          <p className="mb-6">
+            The network below has {LAYERS[0]} inputs feeding into two hidden layers of {LAYERS[1]} neurons,
+            which then produce {LAYERS[LAYERS.length - 1]} outputs. Hover over any node's formula to
+            see what it's actually computing. Better yet, drag any number and watch
+            the changes cascade through the entire network.
+          </p>
+        </div>
+
+        {/* Visualization */}
+        <div className="my-10">
           <VisualizationComponent
             type="custom"
             config={config.visualizations![0]}
-            height={500}
+            height={750}
           />
         </div>
 
-        {/* Inputs */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Inputs (drag to change)</h2>
-          <div className="flex gap-6 justify-center">
-            {Array.from({ length: LAYERS[0] }, (_, i) => (
-              <div key={i} className="text-center">
-                <div className="text-sm text-gray-500">x<sub>{i + 1}</sub></div>
-                <div className="text-xl font-mono">
-                  <InlineVariable id={`x_${i + 1}`} display="value" />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            This network takes three input values:{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-green-50 px-2 py-0.5 rounded">x₁ = <InlineVariable id="x_1" display="value" /></span>,{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-green-50 px-2 py-0.5 rounded">x₂ = <InlineVariable id="x_2" display="value" /></span>, and{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-green-50 px-2 py-0.5 rounded">x₃ = <InlineVariable id="x_3" display="value" /></span>.
+            In a real application, these might be pixel values from an image, readings from a sensor,
+            or any numerical features you want the network to learn from.
+          </p>
+
+          <p className="mb-6">
+            Every connection between neurons has a <strong>weight</strong> that controls how much
+            influence flows through it. The weights connecting our three inputs to the first
+            hidden neuron are{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-purple-50 px-2 py-0.5 rounded"><InlineVariable id="w_1_1_1" display="value" /></span>,{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-purple-50 px-2 py-0.5 rounded"><InlineVariable id="w_1_2_1" display="value" /></span>, and{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-purple-50 px-2 py-0.5 rounded"><InlineVariable id="w_1_3_1" display="value" /></span>.
+            When a weight is positive, it amplifies the signal. When it's negative, it suppresses it.
+            Go ahead and drag one of these to see what happens.
+          </p>
+
+          <p className="mb-6">
+            You can see this reflected in the visualization above. The lines between nodes are
+            colored <span className="text-green-600 font-medium">green</span> for positive weights
+            and <span className="text-red-500 font-medium">red</span> for negative ones. The thickness
+            of each line shows the magnitude: stronger weights produce thicker lines, while weights
+            close to zero fade to thin gray.
+          </p>
+
+          <p className="mb-6">
+            Each neuron also has a <strong>bias</strong> term
+            (the first hidden neuron's is{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-amber-50 px-2 py-0.5 rounded">b₁ = <InlineVariable id="b_1_1" display="value" /></span>)
+            that shifts when the neuron "fires." Think of it as a threshold adjustment. Without biases,
+            networks would be surprisingly limited in what they could learn.
+          </p>
+
+          <p className="mb-6">
+            So what does a neuron actually do? It takes all its inputs, multiplies each one by
+            the corresponding weight, adds everything together including the bias, and then
+            applies an <strong>activation function</strong>. We're using <strong>ReLU</strong> here,
+            which just means: if the result is negative, output zero; otherwise, pass it through
+            unchanged. Written as code: <code className="bg-gray-100 px-1.5 py-0.5 rounded text-base">max(0, x)</code>.
+          </p>
+
+          <p className="mb-6">
+            Here's the complete formula for the first hidden neuron. Try dragging any of the
+            values to see the computation update in real time:
+          </p>
         </div>
 
-        {/* Outputs */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Outputs</h2>
-          <div className="flex gap-6 justify-center">
+        <div className="my-8 bg-gray-50 rounded-xl p-4 border">
+          <FormulaComponent
+            id="formula_h_1_1"
+            style={{ height: "280px", width: "100%" }}
+          />
+        </div>
+
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            Information flows through the network one layer at a time. Each neuron in a hidden
+            layer connects to every neuron in the previous layer, computes its weighted
+            sum, and passes the result forward. By the time we reach the end, the network has
+            produced its final outputs:
+          </p>
+
+          <div className="flex gap-6 justify-center my-8">
             {Array.from({ length: LAYERS[LAYERS.length - 1] }, (_, i) => (
-              <div key={i} className="text-center bg-orange-50 rounded-lg p-3">
-                <div className="text-sm text-orange-600">h<sub>{i + 1}</sub><sup>({LAYERS.length - 1})</sup></div>
-                <div className="text-2xl font-mono font-bold text-orange-700">
+              <div key={i} className="text-center bg-orange-50 rounded-lg p-4">
+                <div className="text-sm text-orange-600 mb-1">Output {i + 1}</div>
+                <div className="text-3xl font-mono font-bold text-orange-700">
                   <InlineVariable id={`h_${i + 1}_${LAYERS.length - 1}`} display="value" />
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Sample Formula */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Sample Formula</h2>
-          <p className="text-gray-600 mb-3">
-            Drag input values (x, weights, biases) in this formula to see the network update:
+          <p className="mb-6">
+            Count them up and this little network has {totalWeights} weights and {totalBiases} biases,
+            which means {totalWeights + totalBiases} numbers control its behavior. In practice,
+            these values get learned automatically through a process called <strong>training</strong>:
+            you show the network thousands of examples, it makes predictions, you tell it how wrong
+            it was, and it adjusts the weights to do better next time. Here, you get to play that
+            role yourself.
           </p>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <FormulaComponent 
-              id="formula_h_1_1" 
-              style={{ height: "300px", width: "100%" }} 
-            />
-          </div>
-        </div>
 
-        {/* Stats */}
-        <div className="bg-blue-50 rounded-lg p-4 text-sm">
-          <strong>Statistics:</strong> {formulas.length} formulas, {totalWeights} weights, {totalBiases} biases —
-          all generated programmatically using <code className="bg-blue-100 px-1 rounded">Variable.loop()</code> and
-          <code className="bg-blue-100 px-1 rounded">Variable.vector()</code>.
+          <p className="mb-6">
+            The real power of neural networks isn't in any single neuron. It's in depth and
+            composition. The first layer might learn to detect edges in an image. The next layer
+            combines those edges into shapes. The layer after that recognizes objects. Stack enough
+            of these transformations together and you can approximate almost any function.
+          </p>
+
+          <p className="text-gray-500 text-base mt-10">
+            This visualization includes {formulas.length} interconnected formulas, all updating
+            together whenever you change a value.
+          </p>
         </div>
       </div>
     </FormulizeProvider>
