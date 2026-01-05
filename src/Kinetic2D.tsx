@@ -197,7 +197,7 @@ export const Kinetic2DExample: React.FC = () => {
     <div className="space-y-12">
       {/* Kinetic Energy Section */}
       <FormulizeProvider config={kineticConfig}>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Kinetic Energy
           </h2>
@@ -215,31 +215,33 @@ export const Kinetic2DExample: React.FC = () => {
               id="kinetic-energy"
               style={{ height: "200px", width: "300px" }}
             />
-            {kineticConfig.visualizations && kineticConfig.visualizations[0] && (
-              <VisualizationComponent
-                type="plot2d"
-                config={kineticConfig.visualizations[0]}
-                height={400}
-              />
-            )}
+            {kineticConfig.visualizations &&
+              kineticConfig.visualizations[0] && (
+                <VisualizationComponent
+                  type="plot2d"
+                  config={kineticConfig.visualizations[0]}
+                  height={400}
+                />
+              )}
           </div>
         </div>
       </FormulizeProvider>
 
       {/* Radioactive Decay Section with SVG Integration */}
       <FormulizeProvider config={radioactiveDecayConfig}>
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-lg border border-gray-700 p-6">
-          <h2 className="text-2xl font-bold text-green-400 mb-4">
-            ☢️ Radioactive Decay (SVG Integration)
+        <div className="rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Radioactive Decay (SVG Integration)
           </h2>
-          <p className="text-gray-300 leading-relaxed mb-4">
-            This example demonstrates <strong className="text-green-400">SVG integration</strong> with 
+          <p className="text-gray-700 leading-relaxed mb-4">
+            This example demonstrates <strong>SVG integration</strong> with
             animated icons replacing variable symbols. The formula{" "}
             <InlineFormula id="radioactive-decay" scale={1.0} /> models
             exponential decay where <InlineVariable id="N" display="both" />{" "}
-            atoms remain after time <InlineVariable id="t" display="withUnits" />,
-            starting from <InlineVariable id="N_0" display="withUnits" /> with
-            decay constant <InlineVariable id="\\lambda" display="withUnits" />.
+            atoms remain after time{" "}
+            <InlineVariable id="t" display="withUnits" />, starting from{" "}
+            <InlineVariable id="N_0" display="withUnits" /> with decay constant{" "}
+            <InlineVariable id="\\lambda" display="withUnits" />.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
             <FormulaComponent
