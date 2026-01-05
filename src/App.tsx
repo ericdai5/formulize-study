@@ -3,14 +3,16 @@ import "./App.css";
 import Kinetic2DExample from "./Kinetic2D";
 import BayesVisualizationExample from "./BayesVisualization";
 import MinimalSummation from "./MinimalSummation";
+import GradientDescentExample from "./GradientDescent";
 
 function App() {
   const [activeExample, setActiveExample] = useState<
-    "kinetic" | "bayes" | "summation"
-  >("summation");
+    "kinetic" | "bayes" | "summation" | "gradient-descent"
+  >("gradient-descent");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const examples = [
+    { id: "gradient-descent", label: "Gradient Descent" },
     { id: "kinetic", label: "Kinetic Energy" },
     { id: "bayes", label: "Bayes Theorem" },
     { id: "summation", label: "Summation" },
@@ -66,8 +68,10 @@ function App() {
         )}
       </div>
 
-      <div className="w-full h-screen">
-        {activeExample === "kinetic" ? (
+      <div className="w-full h-screen overflow-auto">
+        {activeExample === "gradient-descent" ? (
+          <GradientDescentExample />
+        ) : activeExample === "kinetic" ? (
           <Kinetic2DExample />
         ) : activeExample === "bayes" ? (
           <BayesVisualizationExample />

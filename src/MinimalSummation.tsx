@@ -7,7 +7,8 @@ import {
   type FormulizeConfig,
 } from "formulize-math";
 
-const config: FormulizeConfig = {
+// First config: Expected Value with 10 items
+const config1: FormulizeConfig = {
   formulas: [
     {
       id: "summation-basic",
@@ -90,17 +91,102 @@ const config: FormulizeConfig = {
   fontSize: 1.5,
 };
 
+// Second config: Simple summation with 5 items (different formula)
+const config2: FormulizeConfig = {
+  formulas: [
+    {
+      id: "sum-basic",
+      latex: "S = \\sum_{i=1}^{n} a_i",
+    },
+  ],
+  variables: {
+    S: {
+      role: "computed",
+      precision: 2,
+      default: 0,
+      name: "Sum",
+      latexDisplay: "name",
+      labelDisplay: "value",
+    },
+    i: {
+      role: "index",
+      precision: 0,
+      name: "index i",
+      latexDisplay: "name",
+      labelDisplay: "value",
+    },
+    n: {
+      role: "input",
+      default: 5,
+      precision: 0,
+    },
+    a_i: {
+      role: "input",
+      index: "i",
+      default: [2, 4, 6, 8, 10],
+      precision: 0,
+      name: "a_i",
+      latexDisplay: "name",
+      labelDisplay: "value",
+    },
+  },
+  semantics: {
+    engine: "manual",
+    mode: "step",
+    manual: function (vars) {
+      var sum = vars.S;
+      var values = vars.a_i;
+      for (var i = 0; i < values.length; i++) {
+        var a = values[i];
+        view("Current element:", a);
+        sum = sum + a;
+        view("Running sum:", sum);
+      }
+      return sum;
+    },
+  },
+  fontSize: 1.5,
+};
+
 const MinimalSummation: React.FC = () => {
   return (
-    <FormulizeProvider config={config}>
-      <div className="p-4 flex flex-col gap-4">
-        <FormulaComponent
-          id="summation-basic"
-          style={{ height: "300px", width: "700px" }}
-        />
-        <InterpreterControl environment={config} width={700} />
+    <div className="p-4 flex flex-col gap-8">
+      <h1 className="text-2xl font-bold text-slate-800">
+        Multiple Independent Formulize Interpreters
+      </h1>
+
+      {/* First Formulize Provider - Expected Value */}
+      <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+        <h2 className="text-lg font-semibold text-blue-800 mb-4">
+          Formula 1: Expected Value
+        </h2>
+        <FormulizeProvider config={config1}>
+          <div className="flex flex-col gap-4">
+            <FormulaComponent
+              id="summation-basic"
+              style={{ height: "300px", width: "700px" }}
+            />
+            <InterpreterControl environment={config1} width={700} />
+          </div>
+        </FormulizeProvider>
       </div>
-    </FormulizeProvider>
+
+      {/* Second Formulize Provider - Simple Sum */}
+      <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+        <h2 className="text-lg font-semibold text-green-800 mb-4">
+          Formula 2: Simple Summation
+        </h2>
+        <FormulizeProvider config={config2}>
+          <div className="flex flex-col gap-4">
+            <FormulaComponent
+              id="sum-basic"
+              style={{ height: "300px", width: "700px" }}
+            />
+            <InterpreterControl environment={config2} width={700} />
+          </div>
+        </FormulizeProvider>
+      </div>
+    </div>
   );
 };
 
