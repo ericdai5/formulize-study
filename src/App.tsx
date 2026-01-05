@@ -4,15 +4,17 @@ import NeuralNetworkExample from "./NeuralNetwork";
 import Kinetic2DExample from "./Kinetic2D";
 import BayesVisualizationExample from "./BayesVisualization";
 import MinimalSummation from "./MinimalSummation";
+import MannWhitneyExample from "./MannWhitney";
 
 function App() {
   const [activeExample, setActiveExample] = useState<
-    "kinetic" | "bayes" | "summation" | "neural"
+    "kinetic" | "bayes" | "summation" | "neural" | "mannwhitney"
   >("neural");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const examples = [
     { id: "neural", label: "Neural Network" },
+    { id: "mannwhitney", label: "Mann-Whitney U Test" },
     { id: "kinetic", label: "Kinetic Energy" },
     { id: "bayes", label: "Bayes Theorem" },
     { id: "summation", label: "Summation" },
@@ -51,7 +53,7 @@ function App() {
                 key={example.id}
                 onClick={() => {
                   setActiveExample(
-                    example.id as "kinetic" | "bayes" | "summation" | "neural"
+                    example.id as "kinetic" | "bayes" | "summation" | "neural" | "mannwhitney"
                   );
                   setDropdownOpen(false);
                 }}
@@ -71,6 +73,8 @@ function App() {
       <div className="w-full h-screen">
         {activeExample === "neural" ? (
           <NeuralNetworkExample />
+        ) : activeExample === "mannwhitney" ? (
+          <MannWhitneyExample />
         ) : activeExample === "kinetic" ? (
           <Kinetic2DExample />
         ) : activeExample === "bayes" ? (
