@@ -74,7 +74,10 @@ export const Kinetic2DExample: React.FC = () => {
         quadruples the energy, while doubling mass only doubles it.
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 mt-4">
-        <FormulaComponent id="kinetic-energy" style={{ height: "200px" }} />
+        <FormulaComponent
+          id="kinetic-energy"
+          style={{ height: "200px", width: "300px" }}
+        />
         {kineticConfig.visualizations && kineticConfig.visualizations[0] && (
           <VisualizationComponent
             type="plot2d"

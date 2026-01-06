@@ -1,12 +1,256 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import {
   FormulaComponent,
   FormulizeProvider,
   InlineFormula,
   InlineVariable,
+  register,
+  VisualizationComponent,
   type FormulizeConfig,
+  type IContext,
 } from "formulize-math";
+
+// ============================================================================
+// Race Order Visualization Component
+// ============================================================================
+
+type Animal = "T" | "H";
+
+interface RacePosition {
+  position: number; // 1-12 (also the rank)
+  animal: Animal;
+}
+
+/**
+ * Converts formula variable values to race order
+ * Variables t_1...t_6 contain tortoise ranks, h_1...h_6 contain hare ranks
+ */
+function variablesToRaceOrder(
+  getVariable: (name: string) => number
+): RacePosition[] {
+  const positions: RacePosition[] = [];
+
+  // Get tortoise ranks
+  for (let i = 1; i <= 6; i++) {
+    const rank = Math.round(getVariable(`t_${i}`));
+    if (rank >= 1 && rank <= 12) {
+      positions.push({ position: rank, animal: "T" });
+    }
+  }
+
+  // Get hare ranks
+  for (let i = 1; i <= 6; i++) {
+    const rank = Math.round(getVariable(`h_${i}`));
+    if (rank >= 1 && rank <= 12) {
+      positions.push({ position: rank, animal: "H" });
+    }
+  }
+
+  // Sort by position
+  positions.sort((a, b) => a.position - b.position);
+
+  return positions;
+}
+
+/**
+ * Converts race order to formula variable values
+ * Returns null if the race order is invalid (duplicate ranks)
+ */
+function raceOrderToVariables(
+  raceOrder: RacePosition[]
+): { tortoiseRanks: number[]; hareRanks: number[] } | null {
+  const tortoiseRanks: number[] = [];
+  const hareRanks: number[] = [];
+  const usedRanks = new Set<number>();
+
+  for (const pos of raceOrder) {
+    if (usedRanks.has(pos.position)) {
+      return null; // Duplicate rank
+    }
+    usedRanks.add(pos.position);
+
+    if (pos.animal === "T") {
+      tortoiseRanks.push(pos.position);
+    } else {
+      hareRanks.push(pos.position);
+    }
+  }
+
+  if (tortoiseRanks.length !== 6 || hareRanks.length !== 6) {
+    return null; // Invalid count
+  }
+
+  return { tortoiseRanks, hareRanks };
+}
+
+/**
+ * Check if current formula values represent a valid race (no duplicate ranks)
+ */
+function isValidRaceOrder(getVariable: (name: string) => number): boolean {
+  const ranks = new Set<number>();
+
+  for (let i = 1; i <= 6; i++) {
+    const tRank = Math.round(getVariable(`t_${i}`));
+    const hRank = Math.round(getVariable(`h_${i}`));
+
+    if (ranks.has(tRank) || ranks.has(hRank)) return false;
+    if (tRank < 1 || tRank > 12 || hRank < 1 || hRank > 12) return false;
+
+    ranks.add(tRank);
+    ranks.add(hRank);
+  }
+
+  return ranks.size === 12;
+}
+
+/**
+ * Race Order Visualization - Custom visualization component using IContext API
+ * This is the proper way to build custom visualizations in Formulize.
+ * The component receives an IContext with getVariable/updateVariable methods,
+ * and the Canvas wrapper handles reactivity automatically.
+ */
+const RaceOrderVisualizationInner: React.FC<{ context: IContext }> = ({ context }) => {
+  const [raceOrder, setRaceOrder] = useState<RacePosition[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isValid, setIsValid] = useState(true);
+
+  // Helper to get variable value from context
+  const getVar = useCallback((name: string): number => {
+    return context.getVariable(name) ?? 0;
+  }, [context]);
+
+  // Sync from context variables to visualization state
+  // This runs on every render when context.variables changes (handled by Canvas)
+  useEffect(() => {
+    const valid = isValidRaceOrder(getVar);
+    setIsValid(valid);
+
+    if (valid) {
+      const order = variablesToRaceOrder(getVar);
+      setRaceOrder(order);
+    }
+  }, [context.variables, getVar]);
+
+  // Update formula variables when race order changes via drag
+  const updateFormulaFromRaceOrder = useCallback((newOrder: RacePosition[]) => {
+    const result = raceOrderToVariables(newOrder);
+    if (!result) return;
+
+    const { tortoiseRanks, hareRanks } = result;
+
+    // Update tortoise variables
+    tortoiseRanks.forEach((rank, i) => {
+      context.updateVariable(`t_${i + 1}`, rank);
+    });
+
+    // Update hare variables
+    hareRanks.forEach((rank, i) => {
+      context.updateVariable(`h_${i + 1}`, rank);
+    });
+  }, [context]);
+
+  // Handle drag start
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  // Handle drag over
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  // Handle drop - swap animals between positions
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    // Swap the animals at these positions
+    const newOrder = [...raceOrder];
+    const draggedAnimal = newOrder[draggedIndex].animal;
+    const targetAnimal = newOrder[targetIndex].animal;
+
+    newOrder[draggedIndex] = { ...newOrder[draggedIndex], animal: targetAnimal };
+    newOrder[targetIndex] = { ...newOrder[targetIndex], animal: draggedAnimal };
+
+    setRaceOrder(newOrder);
+    updateFormulaFromRaceOrder(newOrder);
+    setDraggedIndex(null);
+  };
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  return (
+    <div className="my-8 p-6 bg-white border rounded-xl">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">Race Finish Order</h3>
+        {!isValid && (
+          <span className="text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded">
+            Invalid ranks (duplicates detected)
+          </span>
+        )}
+      </div>
+
+      <p className="text-sm text-gray-500 mb-4">
+        Drag animals to reorder the race results. Position 1 is first place (rank 1).
+      </p>
+
+      {/* Race track visualization */}
+      <div className="flex items-end gap-1">
+        {/* Finish line */}
+        <div className="flex flex-col items-center mr-2">
+          <div className="w-1 h-16 bg-gradient-to-b from-black via-white to-black bg-[length:100%_8px]" />
+          <span className="text-xs text-gray-400 mt-1">Finish</span>
+        </div>
+
+        {/* Race positions */}
+        {raceOrder.map((pos, index) => (
+          <div
+            key={pos.position}
+            draggable
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, index)}
+            onDragEnd={handleDragEnd}
+            className={`
+              flex flex-col items-center cursor-grab active:cursor-grabbing
+              transition-transform duration-150
+              ${draggedIndex === index ? "scale-110 opacity-50" : "hover:scale-105"}
+            `}
+          >
+            {/* Animal icon */}
+            <div
+              className={`
+                w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold
+                shadow-md border-2 transition-colors
+                ${pos.animal === "T"
+                  ? "bg-green-100 border-green-400 text-green-700"
+                  : "bg-orange-100 border-orange-400 text-orange-700"}
+              `}
+            >
+              {pos.animal === "T" ? "🐢" : "🐇"}
+            </div>
+
+            {/* Position label */}
+            <div className="mt-1 text-xs font-medium text-gray-600">
+              {pos.position}
+              {pos.position === 1 ? "st" : pos.position === 2 ? "nd" : pos.position === 3 ? "rd" : "th"}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Register the custom visualization with Formulize
+register("RaceOrderVisualization", RaceOrderVisualizationInner);
 
 // ============================================================================
 // Mann-Whitney U Test Example
@@ -22,7 +266,7 @@ import {
 
 const mannWhitneyConfig: FormulizeConfig = {
   formulas: [
-    // Step 1: Sum of ranks
+    // Step 1: Sum of ranks - R_T shows as symbol (name), t_i shows as values
     {
       id: "r1-sum",
       latex: "{R_T} = {t_1} + {t_2} + {t_3} + {t_4} + {t_5} + {t_6}",
@@ -68,33 +312,33 @@ const mannWhitneyConfig: FormulizeConfig = {
     },
   ],
   variables: {
-    // Tortoise ranks - INPUT variables with drag interaction
-    t_1: { role: "input", precision: 0, default: 1, range: [1, 12], step: 1, name: "t₁", latexDisplay: "value"},
-    t_2: { role: "input", precision: 0, default: 7, range: [1, 12], step: 1, name: "t₂", latexDisplay: "value"},
-    t_3: { role: "input", precision: 0, default: 8, range: [1, 12], step: 1, name: "t₃", latexDisplay: "value"},
-    t_4: { role: "input", precision: 0, default: 9, range: [1, 12], step: 1, name: "t₄", latexDisplay: "value"},
-    t_5: { role: "input", precision: 0, default: 10, range: [1, 12], step: 1, name: "t₅", latexDisplay: "value"},
-    t_6: { role: "input", precision: 0, default: 11, range: [1, 12], step: 1, name: "t₆", latexDisplay: "value"},
-    // Hare ranks - INPUT variables with drag interaction
-    h_1: { role: "input", precision: 0, default: 2, range: [1, 12], step: 1, name: "h₁", latexDisplay: "value"},
-    h_2: { role: "input", precision: 0, default: 3, range: [1, 12], step: 1, name: "h₂", latexDisplay: "value"},
-    h_3: { role: "input", precision: 0, default: 4, range: [1, 12], step: 1, name: "h₃", latexDisplay: "value"},
-    h_4: { role: "input", precision: 0, default: 5, range: [1, 12], step: 1, name: "h₄", latexDisplay: "value"},
-    h_5: { role: "input", precision: 0, default: 6, range: [1, 12], step: 1, name: "h₅", latexDisplay: "value"},
-    h_6: { role: "input", precision: 0, default: 12, range: [1, 12], step: 1, name: "h₆", latexDisplay: "value"},
-    // Sample sizes - CONSTANTS (fixed)
-    n_T: { role: "constant", precision: 0, default: 6, name: "n_T", latexDisplay: "value"},
-    n_H: { role: "constant", precision: 0, default: 6, name: "n_H", latexDisplay: "value"},
-    // Sum of ranks (computed)
-    R_T: { role: "computed", precision: 0, name: "R_T", latexDisplay: "name", labelDisplay: "value" },
-    R_H: { role: "computed", precision: 0, name: "R_H", latexDisplay: "name", labelDisplay: "value" },
-    // U statistics (computed)
-    U_T: { role: "computed", precision: 0, name: "U_T", latexDisplay: "name", labelDisplay: "value" },
-    U_H: { role: "computed", precision: 0, name: "U_H", latexDisplay: "name", labelDisplay: "value" },
+    // Tortoise ranks - INPUT variables
+    t_1: { role: "input", precision: 0, default: 1, range: [1, 12], step: 1, name: "t₁", latexDisplay: "name", labelDisplay: "value" },
+    t_2: { role: "input", precision: 0, default: 7, range: [1, 12], step: 1, name: "t₂", latexDisplay: "name", labelDisplay: "value" },
+    t_3: { role: "input", precision: 0, default: 8, range: [1, 12], step: 1, name: "t₃", latexDisplay: "name", labelDisplay: "value" },
+    t_4: { role: "input", precision: 0, default: 9, range: [1, 12], step: 1, name: "t₄", latexDisplay: "name", labelDisplay: "value" },
+    t_5: { role: "input", precision: 0, default: 10, range: [1, 12], step: 1, name: "t₅", latexDisplay: "name", labelDisplay: "value" },
+    t_6: { role: "input", precision: 0, default: 11, range: [1, 12], step: 1, name: "t₆", latexDisplay: "name", labelDisplay: "value" },
+    // Hare ranks - INPUT variables
+    h_1: { role: "input", precision: 0, default: 2, range: [1, 12], step: 1, name: "h₁", latexDisplay: "name", labelDisplay: "value" },
+    h_2: { role: "input", precision: 0, default: 3, range: [1, 12], step: 1, name: "h₂", latexDisplay: "name", labelDisplay: "value" },
+    h_3: { role: "input", precision: 0, default: 4, range: [1, 12], step: 1, name: "h₃", latexDisplay: "name", labelDisplay: "value" },
+    h_4: { role: "input", precision: 0, default: 5, range: [1, 12], step: 1, name: "h₄", latexDisplay: "name", labelDisplay: "value" },
+    h_5: { role: "input", precision: 0, default: 6, range: [1, 12], step: 1, name: "h₅", latexDisplay: "name", labelDisplay: "value" },
+    h_6: { role: "input", precision: 0, default: 12, range: [1, 12], step: 1, name: "h₆", latexDisplay: "name", labelDisplay: "value" },
+    // Sample sizes - CONSTANTS
+    n_T: { role: "constant", precision: 0, default: 6, name: "nT", latexDisplay: "name", labelDisplay: "value" },
+    n_H: { role: "constant", precision: 0, default: 6, name: "nH", latexDisplay: "name", labelDisplay: "value" },
+    // Sum of ranks
+    R_T: { role: "computed", precision: 0, name: "RT", latexDisplay: "name", labelDisplay: "value" },
+    R_H: { role: "computed", precision: 0, name: "RH", latexDisplay: "name", labelDisplay: "value" },
+    // U statistics
+    U_T: { role: "computed", precision: 0, name: "UT", latexDisplay: "name", labelDisplay: "value" },
+    U_H: { role: "computed", precision: 0, name: "UH", latexDisplay: "name", labelDisplay: "value" },
     U: { role: "computed", precision: 0, name: "U", latexDisplay: "name", labelDisplay: "value" },
     // Normal approximation parameters
-    "\\mu_U": { role: "computed", precision: 2, name: "μ_U", latexDisplay: "name", labelDisplay: "value" },
-    "\\sigma_U": { role: "computed", precision: 2, name: "σ_U", latexDisplay: "name", labelDisplay: "value" },
+    "\\mu_U": { role: "computed", precision: 2, name: "μU", latexDisplay: "name", labelDisplay: "value" },
+    "\\sigma_U": { role: "computed", precision: 2, name: "σU", latexDisplay: "name", labelDisplay: "value" },
     z: { role: "computed", precision: 3, name: "z", latexDisplay: "name", labelDisplay: "value" },
   },
   semantics: {
@@ -131,107 +375,145 @@ export const MannWhitneyExample: React.FC = () => {
   return (
     <FormulizeProvider config={mannWhitneyConfig}>
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-4">Mann-Whitney U Test</h1>
+        <h1 className="text-4xl font-bold mb-2">The Mann-Whitney U Test</h1>
+        <p className="text-xl text-gray-500 mb-8">A non-parametric way to compare two groups</p>
 
-        <p className="mb-6 text-gray-700">
-          The Mann-Whitney U test compares two independent samples to determine
-          if one group tends to have larger values than the other. It's a
-          non-parametric alternative to the independent t-test.
-        </p>
-
-        {/* Story */}
-        <section className="mb-8 bg-amber-50 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-3">The Tortoise and Hare Race</h2>
-          <p>
-            Aesop races <InlineVariable id="n_T" display="value" /> tortoises
-            against <InlineVariable id="n_H" display="value" /> hares. The finish
-            order is <strong>T H H H H H T T T T T H</strong>. The ranks below
-            reflect this order. Drag them to explore different scenarios!
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            Sometimes you want to know if one group tends to outperform another, but you can't
+            assume your data follows a normal distribution. That's where the <strong>Mann-Whitney U test</strong> comes
+            in. It compares two independent samples by looking at their ranks rather than their
+            raw values, making it robust to outliers and skewed distributions.
           </p>
-        </section>
 
-        {/* Step 1: Sum of Ranks */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Step 1: Sum of Ranks</h2>
-          <p className="mb-4 text-gray-700">
-            First, we rank all 12 animals by finish position (1 = first place).
-            Then we sum the ranks for each group. The tortoise ranks
-            sum to <InlineVariable id="R_T" display="both" />, and the hare
-            ranks sum to <InlineVariable id="R_H" display="both" />.
+          <p className="mb-6">
+            To make this concrete, let's look at a classic example: Aesop
+            races <InlineVariable id="n_T" display="value" /> tortoises
+            against <InlineVariable id="n_H" display="value" /> hares. The animals cross the finish
+            line in a particular order. One tortoise wins outright, but then
+            five hares finish before the rest of the tortoises straggle in. Finally, one last
+            hare brings up the rear.
           </p>
-          <div className="grid grid-cols-1 gap-6">
-            <FormulaComponent id="r1-sum" style={{ height: "180px" }} />
-            <FormulaComponent id="r2-sum" style={{ height: "180px" }} />
-          </div>
-        </section>
+        </div>
 
-        {/* Step 2: U Statistics */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Step 2: U Statistics</h2>
-          <p className="mb-4 text-gray-700">
-            The U statistic measures how many times members of one group
-            beat members of the other. Using the indirect method, we
-            compute <InlineFormula id="u-formula-inline" scale={0.9} />.
-            This gives us <InlineVariable id="U_T" display="both" /> for
-            tortoises and <InlineVariable id="U_H" display="both" /> for hares.
-            The test statistic is the smaller value: <InlineVariable id="U" display="both" />.
-          </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <FormulaComponent id="u1-formula" style={{ height: "200px" }} />
-            <FormulaComponent id="u2-formula" style={{ height: "200px" }} />
-          </div>
-          <div className="mt-4">
-            <FormulaComponent id="u-final" style={{ height: "150px" }} />
-          </div>
-        </section>
+        {/* Interactive Race Order Visualization */}
+        <VisualizationComponent
+          type="custom"
+          config={{
+            id: "race-order",
+            type: "custom",
+            component: "RaceOrderVisualization",
+            variables: ["t_1", "t_2", "t_3", "t_4", "t_5", "t_6", "h_1", "h_2", "h_3", "h_4", "h_5", "h_6"],
+            update: { onVariableChange: true },
+          }}
+        />
 
-        {/* Step 3: Significance Testing */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Step 3: Normal Approximation</h2>
-          <p className="mb-4 text-gray-700">
-            For larger samples, we can approximate the distribution of U with a
-            normal distribution. Under the null hypothesis (no difference between
-            groups), U has mean <InlineVariable id="\mu_U" display="both" /> and
-            standard deviation <InlineVariable id="\sigma_U" display="both" />.
-            We compute a z-score using <InlineFormula id="z-formula-inline" scale={0.9} /> to
-            assess significance.
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            The first step is to assign ranks based on finish position. First place gets rank 1,
+            second place gets rank 2, and so on. Then we add up the ranks for each group. The
+            tortoise ranks sum to{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-amber-50 px-2 py-0.5 rounded">
+              R<sub>T</sub> = <InlineVariable id="R_T" display="value" />
+            </span>, while the hare ranks sum to{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-amber-50 px-2 py-0.5 rounded">
+              R<sub>H</sub> = <InlineVariable id="R_H" display="value" />
+            </span>.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-            <FormulaComponent id="mu-u" style={{ height: "180px" }} />
-            <FormulaComponent id="sigma-u" style={{ height: "180px" }} />
-          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 my-8">
+          <FormulaComponent id="r1-sum" style={{ height: "180px" }} />
+          <FormulaComponent id="r2-sum" style={{ height: "180px" }} />
+        </div>
+
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            Now we compute the <strong>U statistic</strong>, which counts how many times members
+            of one group beat members of the other. There's a neat formula for this that uses
+            the rank sums: <InlineFormula id="u-formula-inline" scale={0.9} />. We calculate U for
+            both groups and take the smaller value as our test statistic.
+          </p>
+
+          <p className="mb-6">
+            For the tortoises, we get{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-green-50 px-2 py-0.5 rounded">
+              U<sub>T</sub> = <InlineVariable id="U_T" display="value" />
+            </span>. For the hares,{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-blue-50 px-2 py-0.5 rounded">
+              U<sub>H</sub> = <InlineVariable id="U_H" display="value" />
+            </span>. The test statistic is the minimum:{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-purple-50 px-2 py-0.5 rounded">
+              U = <InlineVariable id="U" display="value" />
+            </span>.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
+          <FormulaComponent id="u1-formula" style={{ height: "200px" }} />
+          <FormulaComponent id="u2-formula" style={{ height: "200px" }} />
+        </div>
+        <div className="mb-8">
+          <FormulaComponent id="u-final" style={{ height: "150px" }} />
+        </div>
+
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            What does U = <InlineVariable id="U" display="value" /> actually mean? We can verify
+            it with the direct method: count how many hares each tortoise beats. The first
+            tortoise (rank 1) beats all 6 hares. The remaining 5 tortoises (ranks 7-11) each
+            beat only the slowest hare (rank 12). That's 6 + 1 + 1 + 1 + 1 + 1 = 11 wins for
+            the tortoises.
+          </p>
+
+          <p className="mb-6">
+            To test whether this result is statistically significant, we use a <strong>normal
+            approximation</strong>. Under the null hypothesis that there's no difference between
+            groups, U has a known mean and standard deviation. We can convert our U value to
+            a <strong>z-score</strong> to see how extreme it is.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
+          <FormulaComponent id="mu-u" style={{ height: "180px" }} />
+          <FormulaComponent id="sigma-u" style={{ height: "180px" }} />
+        </div>
+        <div className="mb-8">
           <FormulaComponent id="z-score" style={{ height: "180px" }} />
-        </section>
+        </div>
 
-        {/* Interpretation */}
-        <section className="bg-blue-100 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-2">Interpretation</h2>
-          <p className="mb-3">
-            With the default race results, we get <InlineVariable id="U" display="both" /> and
-            z = <InlineVariable id="z" display="value" />. The z-score tells us how
-            far U is from its expected value under the null hypothesis (no difference
-            between groups).
+        <div className="max-w-none text-lg text-gray-700 leading-relaxed">
+          <p className="mb-6">
+            The expected value of U under the null hypothesis is{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-gray-100 px-2 py-0.5 rounded">
+              μ<sub>U</sub> = <InlineVariable id="\mu_U" display="value" />
+            </span>, with standard deviation{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-gray-100 px-2 py-0.5 rounded">
+              σ<sub>U</sub> = <InlineVariable id="\sigma_U" display="value" />
+            </span>. Our z-score comes out to{" "}
+            <span className="inline-flex items-center gap-1 font-mono bg-red-50 px-2 py-0.5 rounded">
+              z = <InlineVariable id="z" display="value" />
+            </span>.
           </p>
-          <p className="mb-3">
-            <strong>What z-scores mean:</strong> If |z| &gt; 1.96, the result is
-            significant at the 5% level (p &lt; 0.05). If |z| &gt; 2.58, it's
-            significant at the 1% level (p &lt; 0.01). Our z = <InlineVariable id="z" display="value" /> is
-            highly significant, providing strong evidence that tortoises and hares
-            differ in racing performance.
+
+          <p className="mb-6">
+            A z-score beyond ±1.96 is significant at the 5% level. Beyond ±2.58, it's significant
+            at the 1% level. Our z = <InlineVariable id="z" display="value" /> is far beyond these
+            thresholds, providing strong evidence that tortoises and hares really do differ in
+            racing performance.
           </p>
-          <p className="mb-3">
-            We can verify U = <InlineVariable id="U" display="value" /> using
-            the <strong>direct method</strong>: count how many hares each tortoise
-            beats. The first tortoise (rank 1) beats all 6 hares. The remaining
-            5 tortoises (ranks 7-11) each beat only the slowest hare (rank 12).
-            Total: 6 + 1 + 1 + 1 + 1 + 1 = 11.
+
+          <p className="mb-6">
+            Try dragging the rank values in the formulas above to explore different scenarios.
+            When the ranks become more mixed between groups, U increases toward its expected
+            value and z approaches zero, indicating no significant difference.
           </p>
-          <p>
-            Try dragging the rank values above to explore. When ranks are more
-            mixed between groups, U increases toward <InlineVariable id="\mu_U" display="value" /> and
-            z approaches zero (no significant difference).
+
+          <p className="text-gray-500 text-base mt-10">
+            This example is based on the classic "Tortoise and Hare" illustration from the
+            Mann-Whitney U test Wikipedia article.
           </p>
-        </section>
+        </div>
       </div>
     </FormulizeProvider>
   );
