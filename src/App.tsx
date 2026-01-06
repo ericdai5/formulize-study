@@ -5,16 +5,26 @@ import Kinetic2DExample from "./Kinetic2D";
 import BayesVisualizationExample from "./BayesVisualization";
 import MinimalSummation from "./MinimalSummation";
 import MannWhitneyExample from "./MannWhitney";
+import GradientDescentExample from "./GradientDescent";
+import NewtonCoolingExample from "./NewtonCooling";
 
 function App() {
   const [activeExample, setActiveExample] = useState<
-    "kinetic" | "bayes" | "summation" | "neural" | "mannwhitney"
+    | "kinetic"
+    | "bayes"
+    | "summation"
+    | "neural"
+    | "mannwhitney"
+    | "gradient-descent"
+    | "newton-cooling"
   >("neural");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const examples = [
     { id: "neural", label: "Neural Network" },
     { id: "mannwhitney", label: "Mann-Whitney U Test" },
+    { id: "newton-cooling", label: "Newton's Law of Cooling" },
+    { id: "gradient-descent", label: "Gradient Descent" },
     { id: "kinetic", label: "Kinetic Energy" },
     { id: "bayes", label: "Bayes Theorem" },
     { id: "summation", label: "Summation" },
@@ -53,7 +63,14 @@ function App() {
                 key={example.id}
                 onClick={() => {
                   setActiveExample(
-                    example.id as "kinetic" | "bayes" | "summation" | "neural" | "mannwhitney"
+                    example.id as
+                      | "kinetic"
+                      | "bayes"
+                      | "summation"
+                      | "neural"
+                      | "mannwhitney"
+                      | "gradient-descent"
+                      | "newton-cooling"
                   );
                   setDropdownOpen(false);
                 }}
@@ -70,11 +87,15 @@ function App() {
         )}
       </div>
 
-      <div className="w-full h-screen">
+      <div className="w-full">
         {activeExample === "neural" ? (
           <NeuralNetworkExample />
         ) : activeExample === "mannwhitney" ? (
           <MannWhitneyExample />
+        ) : activeExample === "newton-cooling" ? (
+          <NewtonCoolingExample />
+        ) : activeExample === "gradient-descent" ? (
+          <GradientDescentExample />
         ) : activeExample === "kinetic" ? (
           <Kinetic2DExample />
         ) : activeExample === "bayes" ? (
