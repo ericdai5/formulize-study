@@ -4,14 +4,16 @@ import Kinetic2DExample from "./Kinetic2D";
 import BayesVisualizationExample from "./BayesVisualization";
 import MinimalSummation from "./MinimalSummation";
 import GradientDescentExample from "./GradientDescent";
+import NewtonCoolingExample from "./NewtonCooling";
 
 function App() {
   const [activeExample, setActiveExample] = useState<
-    "kinetic" | "bayes" | "summation" | "gradient-descent"
-  >("gradient-descent");
+    "kinetic" | "bayes" | "summation" | "gradient-descent" | "newton-cooling"
+  >("newton-cooling");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const examples = [
+    { id: "newton-cooling", label: "Newton's Law of Cooling" },
     { id: "gradient-descent", label: "Gradient Descent" },
     { id: "kinetic", label: "Kinetic Energy" },
     { id: "bayes", label: "Bayes Theorem" },
@@ -51,7 +53,12 @@ function App() {
                 key={example.id}
                 onClick={() => {
                   setActiveExample(
-                    example.id as "kinetic" | "bayes" | "summation"
+                    example.id as
+                      | "kinetic"
+                      | "bayes"
+                      | "summation"
+                      | "gradient-descent"
+                      | "newton-cooling"
                   );
                   setDropdownOpen(false);
                 }}
@@ -69,7 +76,9 @@ function App() {
       </div>
 
       <div className="w-full h-screen overflow-auto">
-        {activeExample === "gradient-descent" ? (
+        {activeExample === "newton-cooling" ? (
+          <NewtonCoolingExample />
+        ) : activeExample === "gradient-descent" ? (
           <GradientDescentExample />
         ) : activeExample === "kinetic" ? (
           <Kinetic2DExample />
