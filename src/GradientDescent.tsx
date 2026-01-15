@@ -144,36 +144,53 @@ const gradientDescentConfig: FormulizeConfig = {
       var alpha = vars["\\alpha"];
       var w_t = vars.w_t;
       var numIterations = 4;
-      view("Initial weight wₜ:", w_t);
-      view("Learning rate α:", alpha);
-      view("Target y:", y);
-      view("Feature x:", x);
+      view("Initial weight wₜ:", { value: w_t, formulaId: "loss-function" });
+      view("Learning rate α:", { value: alpha, formulaId: "update-rule" });
+      view("Target y:", { value: y, formulaId: "loss-function" });
+      view("Feature x:", { value: x, formulaId: "loss-function" });
       // Run gradient descent iterations
       for (var t = 0; t < numIterations; t++) {
-        view("Current wₜ:", w_t);
+        view("Current wₜ:", { value: w_t, formulaId: "loss-function" });
         // Compute prediction
         var prediction = w_t * x;
-        view("Prediction = wₜ·x:", prediction);
+        view("Prediction = wₜ·x:", {
+          value: prediction,
+          formulaId: "loss-function",
+        });
         // Compute error
         var error = y - prediction;
-        view("Error = y - prediction:", error);
+        view("Error = y - prediction:", {
+          value: error,
+          formulaId: "loss-function",
+        });
         // Compute loss
         var L = error * error;
-        view("Loss L = error²:", L);
+        view("Loss L = error²:", { value: L, formulaId: "loss-function" });
         // Compute gradient
         var nablaL = -2 * x * error;
-        view("Gradient ∇L = -2x·error:", nablaL);
+        view("Gradient $\\nabla L = -2x \\cdot Error$:", {
+          value: nablaL,
+          formulaId: "gradient",
+        });
         // Compute step size
         var step = alpha * nablaL;
-        view("Step = α·∇L:", step);
+        view("Step = $\\alpha \\cdot \\nabla L$:", {
+          value: step,
+          formulaId: "update-rule",
+        });
         // Update weight: w_{t+1} = w_t - step
         var w_t_plus_1 = w_t - step;
-        view("wₜ₊₁ = wₜ - step:", w_t_plus_1);
+        view("wₜ₊₁ = wₜ - step:", {
+          value: w_t_plus_1,
+          formulaId: "update-rule",
+        });
         // Move to next iteration
         w_t = w_t_plus_1;
       }
       // Summary
-      view("Final weight after " + numIterations + " iterations:", w_t);
+      view("Final weight after " + numIterations + " iterations:", {
+        value: w_t,
+      });
       return w_t;
     },
   },
