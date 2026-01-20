@@ -18,5 +18,9 @@ export default defineConfig({
   build: {
     // Disable minification to preserve function source code for step engine
     minify: false,
+    rollupOptions: {
+      // Disable tree-shaking to preserve view() calls in manual functions
+      treeshake: false,
+    },
   },
 });
