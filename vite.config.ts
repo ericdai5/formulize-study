@@ -15,4 +15,8 @@ export default defineConfig({
       "mobx-state-tree",
     ],
   },
+  build: {
+    // Disable minification to preserve function source code for step engine
+    minify: false,
+  },
 });
