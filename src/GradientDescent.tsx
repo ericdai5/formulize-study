@@ -247,7 +247,7 @@ const GradientDescentContent: React.FC = () => {
           <InterpreterControl
             environment={gradientDescentConfig}
             width="100%"
-            defaultCollapsed={false}
+            defaultCollapsed={true}
           />
         </div>
       </div>
