@@ -4,12 +4,13 @@
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "secrets": {
     "ANTHROPIC_API_KEY": {
-      "description": "API key for Claude Code CLI"
+      "description": "API key for Claude extension"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
+        "anthropic.claude-code",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss"
