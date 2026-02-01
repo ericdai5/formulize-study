@@ -3,14 +3,13 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "secrets": {
-    "ANTHROPIC_API_KEY": {
-      "description": "API key for Claude extension"
+    "GEMINI_API_KEY": {
+      "description": "API key for Gemini CLI"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "anthropic.claude-code",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss"
