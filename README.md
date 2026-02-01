@@ -1,16 +1,18 @@
-# Formulize Study
+# Formulize Study - AI Condition
 
-Interactive formula visualization study environment.
+Build interactive formula visualizations using React, KaTeX, and D3 with AI assistance.
 
-## Getting Started with GitHub Codespaces
+## Getting Started
+
+### In GitHub Codespaces (Recommended)
 
 1. Click the green **Code** button on the repo
 2. Select **Codespaces** tab
-3. Click **Create codespace on main**
+3. Click **Create codespace on condition-ai**
 
 The environment will automatically install all dependencies and configure Claude Code CLI.
 
-## Running the App
+### Running the App
 
 ```bash
 # Start the development server
@@ -21,42 +23,42 @@ The app will be available at the forwarded port (usually `localhost:5173`).
 
 ## Using Claude Code
 
-Claude Code CLI is pre-installed. To start:
+Claude Code CLI is pre-installed. To start an AI coding session:
 
 ```bash
 claude
 ```
 
-If you need to set your API key manually:
+Use Claude to help you:
+- Write React components
+- Create D3.js visualizations
+- Render LaTeX formulas with KaTeX
+- Debug and improve your code
 
-```bash
-export ANTHROPIC_API_KEY=your-api-key-here
-claude
-```
+## Your Task
 
-## Local Development
+Build an interactive formula visualization that:
+1. Displays mathematical formulas using KaTeX
+2. Allows users to interact with variables (sliders, inputs, etc.)
+3. Updates the visualization in real-time as values change
 
-If running locally instead of Codespaces:
+## Available Libraries
 
-```bash
-# Install dependencies
-npm install
+- **React** - UI components and state management
+- **KaTeX** - LaTeX formula rendering
+- **D3.js** - SVG visualizations and data binding
+- **Tailwind CSS** - Styling
 
-# Start dev server
-npm run dev
+## Example Code
 
-# Build for production
-npm run build
+The starter code in `src/App.tsx` includes:
+- A `Formula` component for rendering KaTeX
+- An example interactive slider
+- Placeholder for your visualization
 
-# Run linting
-npm run lint
-```
+## Tips
 
-## Study Conditions
-
-This repo supports two study conditions:
-
-- **AI Condition**: Use Claude Code with base JavaScript/KaTeX to create formula visualizations
-- **Formulize Condition**: Edit configuration files to create formula visualizations using the Formulize API
-
-Your study coordinator will provide specific instructions for your assigned condition.
+- Start simple - get one formula rendering first
+- Use React `useState` for interactive values
+- KaTeX accepts LaTeX strings like `"E = mc^2"` or `"\\frac{a}{b}"`
+- Ask Claude Code for help with D3.js patterns
