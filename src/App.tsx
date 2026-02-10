@@ -48,6 +48,7 @@ function VariableLabel({
   position,
   isHovered,
   onHover,
+  onDrag,
   placement = "below",
 }: {
   value: number;
@@ -56,8 +57,35 @@ function VariableLabel({
   position: { top: number; left: number };
   isHovered: boolean;
   onHover: (hovered: boolean) => void;
+  onDrag?: (delta: number) => void;
   placement?: "above" | "below";
 }) {
+  const isDragging = useRef(false);
+  const lastY = useRef(0);
+
+  // Global mousemove/mouseup for label drag
+  useEffect(() => {
+    if (!onDrag) return;
+    const handleMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = (lastY.current - e.clientY) * 0.05;
+      lastY.current = e.clientY;
+      onDrag(delta);
+    };
+    const handleUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        onHover(false);
+      }
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [onDrag, onHover]);
+
   return (
     <div
       className="absolute flex flex-col items-center"
@@ -67,7 +95,7 @@ function VariableLabel({
         transform: placement === "above" ? "translateX(-50%) translateY(-100%)" : "translateX(-50%)",
       }}
       onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
+      onMouseLeave={() => { if (!isDragging.current) onHover(false); }}
     >
       <div className="px-3 py-1 rounded-md border border-slate-300 bg-white">
         <span
@@ -78,6 +106,14 @@ function VariableLabel({
             display: "inline-block",
             transition: "transform 0.2s ease",
             transform: isHovered ? "scale(1.1)" : "scale(1)",
+            cursor: onDrag ? "ns-resize" : "default",
+            userSelect: "none",
+          }}
+          onMouseDown={(e) => {
+            if (!onDrag) return;
+            isDragging.current = true;
+            lastY.current = e.clientY;
+            e.preventDefault();
           }}
         >
           {value.toFixed(1)}
@@ -308,6 +344,7 @@ function App() {
               position={vPos}
               isHovered={vHovered}
               onHover={setVHovered}
+              onDrag={(delta) => setV((prev) => Math.max(velocityConfig.min, Math.min(velocityConfig.max, prev + delta)))}
             />
           )}
 
@@ -319,6 +356,7 @@ function App() {
               position={mPos}
               isHovered={mHovered}
               onHover={setMHovered}
+              onDrag={(delta) => setM((prev) => Math.max(massConfig.min, Math.min(massConfig.max, prev + delta)))}
               placement="above"
             />
           )}
