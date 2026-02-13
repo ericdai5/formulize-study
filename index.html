@@ -13,12 +13,13 @@
           packages: {'[+]': ['html']}
         },
         loader: {load: ['[tex]/html']},
-        svg: {
-          fontCache: 'global'
+        chtml: {
+          scale: 1,
+          minScale: 0.5
         }
       };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   </head>
   <body>
     <div id="root"></div>
