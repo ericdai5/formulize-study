@@ -15,19 +15,25 @@ const config: FormulizeConfig = {
     K: {
       name: "Kinetic Energy",
     },
+    m: {
+      input: "drag",
+      default: 1,
+      range: [0, 10],
+      step: 1,
+      name: "Mass",
+    },
     v: {
       input: "drag",
       default: 2,
-      range: [0.1, 100],
+      range: [0, 100],
       step: 1,
       name: "Velocity",
     },
   },
   fontSize: 1.5,
-  labelFontSize: 1.0,
+  labelFontSize: 1,
   semantics: function ({ vars }) {
-    const m = 1;
-    vars.K = 0.5 * m * Math.pow(vars.v, 2);
+    vars.K = 0.5 * vars.m * Math.pow(vars.v, 2);
   },
 };
 
