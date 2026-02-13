@@ -1,67 +1,41 @@
 import {
   Formula,
   FormulizeProvider,
-  StepControl,
   type FormulizeConfig,
 } from "formulize-math";
 
-const averageConfig: FormulizeConfig = {
+const config: FormulizeConfig = {
   formulas: [
     {
-      id: "average",
-      latex: "\\bar{x} = \\frac{1}{n} \\sum_{i=1}^{n} x_i",
+      id: "kinetic",
+      latex: "K = \\frac{1}{2}mv^2",
     },
   ],
   variables: {
-    "\\bar{x}": {},
-    n: {
-      default: 0,
-      name: "Count",
+    K: {
+      name: "Kinetic Energy",
     },
-    i: {
-      name: "Index",
+    v: {
+      input: "drag",
+      default: 2,
+      range: [0.1, 100],
+      step: 1,
+      name: "Velocity",
     },
-    x_i: {
-      name: "Value at i",
-    },
-    x: {
-      default: [10, 20, 30, 40, 50],
-      name: "Data values",
-    },
-  },
-  stepping: true,
-  semantics: ({ vars, step }) => {
-    const xValues = vars.x as number[];
-    const n = xValues.length;
-    let sum = 0;
-    step({
-      description: "Get the count $n$ of values",
-      values: [["n", n]],
-    });
-    for (let i = 0; i < n; i++) {
-      const xi = xValues[i];
-      sum = sum + xi;
-    }
-    let average = sum / n;
-    average = Math.round(average * 100) / 100;
-    step({
-      description:
-        "Divide $\\sum = " + sum + "$ by $n = " + n + "$ to get average",
-      values: [["\\bar{x}", average]],
-    });
-    vars["\\bar{x}"] = average;
   },
   fontSize: 1.5,
+  labelFontSize: 1.0,
+  semantics: function ({ vars }) {
+    const m = 1;
+    vars.K = 0.5 * m * Math.pow(vars.v, 2);
+  },
 };
 
 function App() {
   return (
-    <FormulizeProvider config={averageConfig}>
+    <FormulizeProvider config={config}>
       <div className="min-h-screen p-8 bg-gray-50 flex flex-col items-center">
-        <Formula id="average" style={{ height: "300px", width: "700px" }} />
-        <div className="w-[270px] mx-auto p-4">
-          <StepControl className="w-[700px] mx-auto" />
-        </div>
+        <Formula id="kinetic" style={{ height: "300px", width: "700px" }} />
       </div>
     </FormulizeProvider>
   );
