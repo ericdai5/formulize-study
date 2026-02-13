@@ -15,13 +15,15 @@ import {
 
 function App() {
   const defaultV = 2;
+  const defaultM = 1;
   const [v, setV] = useState(defaultV);
+  const [m, setM] = useState(defaultM);
   const [vHovered, setVHovered] = useState(false);
   const [kHovered, setKHovered] = useState(false);
+  const [mHovered, setMHovered] = useState(false);
 
-  const m = 1;
   const K = 0.5 * m * v * v;
-  const latex = `\\cssId{var-K}{K} = \\frac{1}{2} m \\cssId{var-v}{v}^2`;
+  const latex = `\\cssId{var-K}{K} = \\frac{1}{2} \\cssId{var-m}{m} \\cssId{var-v}{v}^2`;
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center">
@@ -43,6 +45,16 @@ function App() {
             max={10}
             step={0.1}
           />
+          <VariableHitArea
+            elementId="var-m"
+            isHovered={mHovered}
+            onHover={setMHovered}
+            value={m}
+            onChange={setM}
+            min={0}
+            max={10}
+            step={1}
+          />
         </div>
         <div className="flex justify-center gap-8">
           <VariableLabel
@@ -52,6 +64,18 @@ function App() {
             name="Kinetic Energy"
             isHovered={kHovered}
             onHover={setKHovered}
+          />
+          <VariableLabel
+            elementId="var-m"
+            value={m}
+            unit="kg"
+            name="Mass"
+            isHovered={mHovered}
+            onHover={setMHovered}
+            onChange={setM}
+            min={0}
+            max={10}
+            step={1}
           />
           <VariableLabel
             elementId="var-v"
