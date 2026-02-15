@@ -23,12 +23,12 @@ const config: FormulizeConfig = {
       name: "Velocity",
     },
   },
-  fontSize: 1.5,
-  labelFontSize: 1.0,
   semantics: function ({ vars }) {
     const m = 1;
     vars.K = 0.5 * m * Math.pow(vars.v, 2);
   },
+  fontSize: 1.5,
+  labelFontSize: 1.0,
 };
 
 function App() {
