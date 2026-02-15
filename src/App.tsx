@@ -1,10 +1,6 @@
-import {
-  Formula,
-  FormulizeProvider,
-  type FormulizeConfig,
-} from "formulize-math";
+import { Formula, Provider, type Config } from "math-notation";
 
-const config: FormulizeConfig = {
+const config: Config = {
   formulas: [
     {
       id: "kinetic",
@@ -33,11 +29,9 @@ const config: FormulizeConfig = {
 
 function App() {
   return (
-    <FormulizeProvider config={config}>
-      <div className="min-h-screen p-8 bg-gray-50 flex flex-col items-center">
-        <Formula id="kinetic" style={{ height: "300px", width: "700px" }} />
-      </div>
-    </FormulizeProvider>
+    <Provider config={config}>
+      <Formula id="kinetic" style={{ height: "300px", width: "600px" }} />
+    </Provider>
   );
 }
 
