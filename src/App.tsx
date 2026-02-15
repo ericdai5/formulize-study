@@ -12,11 +12,11 @@ const config: Config = {
       name: "Kinetic Energy",
     },
     v: {
+      name: "Velocity",
       input: "drag",
       default: 2,
-      range: [0.1, 100],
+      range: [0, 100],
       step: 1,
-      name: "Velocity",
     },
   },
   semantics: function ({ vars }) {
@@ -30,7 +30,7 @@ const config: Config = {
 function App() {
   return (
     <Provider config={config}>
-      <Formula id="kinetic" style={{ height: "300px", width: "600px" }} />
+      <Formula id="kinetic" style={{ height: "300px", width: "400px" }} />
     </Provider>
   );
 }
