@@ -347,7 +347,7 @@ export function ConnectingLines() {
 // provide a hover target and drag-to-change interaction.
 // ============================================
 
-const HIT_AREA_PADDING = 12;
+const HIT_AREA_PADDING = 0;
 
 export function VariableHitArea({
   elementId,
