@@ -1,9 +1,3 @@
-/**
- * STUDY TASK FILE - This is the ONLY file you need to edit for the tasks.
- * The UI helper components (VariableLabel, VariableHitArea, ConnectingLines)
- * are imported from ui.tsx and do not need to be modified.
- */
-
 import { useState } from "react";
 import {
   Formula,
@@ -24,9 +18,9 @@ function App() {
   const latex = `\\cssId{var-K}{K} = \\frac{1}{2} m \\cssId{var-v}{v}^2`;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+    <div className="flex justify-center p-12">
       <FormulaContainer className="relative">
-        <div className="flex justify-center" style={{ fontSize: "1.5rem" }}>
+        <div style={{ fontSize: "1.5rem" }}>
           <Formula latex={latex} />
           <VariableHitArea
             elementId="var-K"
@@ -39,16 +33,15 @@ function App() {
             onHover={setVHovered}
             value={v}
             onChange={setV}
-            min={0.1}
+            min={0}
             max={10}
-            step={0.1}
+            step={1}
           />
         </div>
         <div className="flex justify-center gap-8">
           <VariableLabel
             elementId="var-K"
             value={K}
-            unit="J"
             name="Kinetic Energy"
             isHovered={kHovered}
             onHover={setKHovered}
@@ -56,14 +49,13 @@ function App() {
           <VariableLabel
             elementId="var-v"
             value={v}
-            unit="m/s"
             name="Velocity"
             isHovered={vHovered}
             onHover={setVHovered}
             onChange={setV}
-            min={0.1}
+            min={0}
             max={10}
-            step={0.1}
+            step={1}
           />
         </div>
         <ConnectingLines />

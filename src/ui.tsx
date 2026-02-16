@@ -48,7 +48,7 @@ export function FormulaContainer({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [labelRects, setLabelRects] = useState<Record<string, DOMRect | null>>(
-    {}
+    {},
   );
 
   const reportLabelPosition = useCallback((id: string, rect: DOMRect) => {
@@ -57,7 +57,7 @@ export function FormulaContainer({
 
   const contextValue = useMemo(
     () => ({ containerRef, labelRects, reportLabelPosition }),
-    [labelRects, reportLabelPosition]
+    [labelRects, reportLabelPosition],
   );
 
   return (
@@ -105,7 +105,7 @@ export function Formula({ latex }: { latex: string }) {
 // Hook for drag-to-change interaction (per-pixel)
 function useDrag(
   onDrag: ((delta: number) => void) | undefined,
-  onHover: (hovered: boolean) => void
+  onHover: (hovered: boolean) => void,
 ) {
   const isDragging = useRef(false);
   const lastY = useRef(0);
@@ -149,17 +149,48 @@ function useDrag(
   return { isDragging, startDrag };
 }
 
-
 // ============================================
 // LABEL COMPONENT (Flow-based, not absolute)
 // Displays a variable's current value in normal document flow.
 // Reports its position via callback for connecting line drawing.
 // ============================================
 
+// ============================================
+// LATEX LABEL COMPONENT
+// Renders text as LaTeX, wrapping in \text{} by default
+// Triggers math mode only if LaTeX commands are detected
+// ============================================
+
+function LatexLabel({
+  children,
+  className,
+}: {
+  children: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const render = async () => {
+      if (!ref.current) return;
+      // If the text contains LaTeX commands (backslash), use it as-is
+      // Otherwise, wrap it in \text{...}
+      const latex = children.includes("\\") ? children : `\\text{${children}}`;
+      ref.current.innerHTML = `\\(${latex}\\)`;
+      await window.MathJax?.startup?.promise;
+      await window.MathJax?.typesetPromise?.([ref.current]);
+    };
+    render();
+  }, [children]);
+
+  return (
+    <div ref={ref} className={className} style={{ display: "inline-block" }} />
+  );
+}
+
 export function VariableLabel({
   elementId,
   value,
-  unit,
   name,
   isHovered,
   onHover,
@@ -170,7 +201,6 @@ export function VariableLabel({
 }: {
   elementId: string;
   value: number;
-  unit: string;
   name: string;
   isHovered: boolean;
   onHover: (hovered: boolean) => void;
@@ -199,7 +229,10 @@ export function VariableLabel({
     if (!labelRef.current) return;
     const frame = requestAnimationFrame(() => {
       if (labelRef.current) {
-        reportLabelPosition(elementId, labelRef.current.getBoundingClientRect());
+        reportLabelPosition(
+          elementId,
+          labelRef.current.getBoundingClientRect(),
+        );
       }
     });
     return () => cancelAnimationFrame(frame);
@@ -216,7 +249,7 @@ export function VariableLabel({
     >
       <div className="px-2 py-0.5 rounded-md bg-white flex items-center">
         <span
-          className={isHovered ? "text-blue-600" : "text-slate-700"}
+          className={isHovered ? "text-blue-600" : "text-black"}
           style={{
             fontFamily: "KaTeX_Main, serif",
             fontSize: "1.1rem",
@@ -231,11 +264,10 @@ export function VariableLabel({
         >
           {value.toFixed(1)}
         </span>
-        <span className="text-slate-500 ml-1" style={{ fontSize: "0.9rem" }}>
-          {unit}
-        </span>
       </div>
-      <div className="text-xs text-slate-500">{name}</div>
+      <div className="text-xs" style={{ color: "black" }}>
+        <LatexLabel>{name}</LatexLabel>
+      </div>
     </div>
   );
 }
@@ -275,7 +307,7 @@ export function ConnectingLines() {
       // Bezier curve
       const midY = (startY + endY) / 2;
       newPaths.push(
-        `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`
+        `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`,
       );
     }
 
@@ -373,8 +405,22 @@ export function VariableHitArea({
   }, [elementId, containerRef]);
 
   useEffect(() => {
-    updateRect();
-  }, [updateRect]);
+    let cancelled = false;
+    // MathJax renders asynchronously, so poll until element exists
+    const checkForElement = () => {
+      if (cancelled) return;
+      const el = document.getElementById(elementId);
+      if (el) {
+        updateRect();
+      } else {
+        requestAnimationFrame(checkForElement);
+      }
+    };
+    checkForElement();
+    return () => {
+      cancelled = true;
+    };
+  }, [updateRect, elementId]);
 
   // Apply hover color and scale to the element in the formula
   useEffect(() => {
