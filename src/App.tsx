@@ -1,10 +1,6 @@
-import {
-  Formula,
-  FormulizeProvider,
-  type FormulizeConfig,
-} from "formulize-math";
+import { Formula, Provider, type Config } from "math-notation";
 
-const config: FormulizeConfig = {
+const config: Config = {
   formulas: [
     {
       id: "kinetic",
@@ -16,34 +12,34 @@ const config: FormulizeConfig = {
       name: "Kinetic Energy",
     },
     m: {
+      name: "Mass",
       input: "drag",
       default: 1,
       range: [0, 10],
       step: 1,
-      name: "Mass",
     },
     v: {
+      name: "Velocity",
       input: "drag",
       default: 2,
       range: [0, 100],
       step: 1,
-      name: "Velocity",
     },
   },
-  fontSize: 1.5,
-  labelFontSize: 1,
   semantics: function ({ vars }) {
     vars.K = 0.5 * vars.m * Math.pow(vars.v, 2);
   },
+  fontSize: 1.5,
+  labelFontSize: 1.0,
 };
 
 function App() {
   return (
-    <FormulizeProvider config={config}>
-      <div className="min-h-screen p-8 bg-gray-50 flex flex-col items-center">
-        <Formula id="kinetic" style={{ height: "300px", width: "700px" }} />
-      </div>
-    </FormulizeProvider>
+    <div className="flex flex-col items-center h-screen">
+      <Provider config={config}>
+        <Formula id="kinetic" style={{ height: "300px", width: "400px" }} />
+      </Provider>
+    </div>
   );
 }
 
