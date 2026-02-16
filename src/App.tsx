@@ -29,9 +29,11 @@ const config: Config = {
 
 function App() {
   return (
-    <Provider config={config}>
-      <Formula id="kinetic" style={{ height: "300px", width: "400px" }} />
-    </Provider>
+    <div className="flex flex-col items-center h-screen">
+      <Provider config={config}>
+        <Formula id="kinetic" style={{ height: "300px", width: "400px" }} />
+      </Provider>
+    </div>
   );
 }
 
