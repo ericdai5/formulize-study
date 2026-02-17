@@ -3,7 +3,6 @@ import {
   Formula,
   VariableLabel,
   VariableHitArea,
-  ConnectingLines,
   FormulaContainer,
 } from "./ui";
 
@@ -58,7 +57,6 @@ function App() {
             step={1}
           />
         </div>
-        <ConnectingLines />
       </FormulaContainer>
     </div>
   );

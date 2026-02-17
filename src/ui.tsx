@@ -64,6 +64,7 @@ export function FormulaContainer({
     <FormulaContainerContext.Provider value={contextValue}>
       <div ref={containerRef} className={className} style={style}>
         {children}
+        <ConnectingLines />
       </div>
     </FormulaContainerContext.Provider>
   );
@@ -277,7 +278,7 @@ export function VariableLabel({
 // Draws SVG bezier curves connecting formula variables to their labels.
 // ============================================
 
-export function ConnectingLines() {
+function ConnectingLines() {
   const { containerRef, labelRects } = useFormulaContext();
   const [paths, setPaths] = useState<string[]>([]);
 
