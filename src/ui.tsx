@@ -6,6 +6,7 @@
  */
 
 import {
+  Children,
   useEffect,
   useRef,
   useState,
@@ -13,6 +14,7 @@ import {
   useMemo,
   createContext,
   useContext,
+  isValidElement,
   type ReactNode,
 } from "react";
 
@@ -60,13 +62,61 @@ export function FormulaContainer({
     [labelRects, reportLabelPosition],
   );
 
+  const childArray = Children.toArray(children);
+  const labelChildren = childArray.filter(
+    (child) => isValidElement(child) && child.type === VariableLabel,
+  );
+  const nonLabelChildren = childArray.filter(
+    (child) => !(isValidElement(child) && child.type === VariableLabel),
+  );
+
+  const containerStyle: React.CSSProperties = {
+    position: "relative",
+    ...style,
+  };
+
   return (
     <FormulaContainerContext.Provider value={contextValue}>
-      <div ref={containerRef} className={className} style={style}>
-        {children}
+      <div ref={containerRef} className={className} style={containerStyle}>
+        {nonLabelChildren}
+        {labelChildren.length > 0 ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "2rem",
+            }}
+          >
+            {labelChildren}
+          </div>
+        ) : null}
         <ConnectingLines />
       </div>
     </FormulaContainerContext.Provider>
+  );
+}
+
+export function VariableLabelsRow({
+  children,
+  className,
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      className={className}
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "2rem",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -96,7 +146,7 @@ export function Formula({ latex }: { latex: string }) {
     render();
   }, [latex]);
 
-  return <div ref={ref} />;
+  return <div ref={ref} style={{ fontSize: "1.5rem" }} />;
 }
 
 // ============================================

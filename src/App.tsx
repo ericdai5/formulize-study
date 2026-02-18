@@ -18,45 +18,41 @@ function App() {
 
   return (
     <div className="flex justify-center p-12">
-      <FormulaContainer className="relative">
-        <div style={{ fontSize: "1.5rem" }}>
-          <Formula latex={latex} />
-          <VariableHitArea
-            elementId="var-K"
-            isHovered={kHovered}
-            onHover={setKHovered}
-          />
-          <VariableHitArea
-            elementId="var-v"
-            isHovered={vHovered}
-            onHover={setVHovered}
-            value={v}
-            onChange={setV}
-            min={0}
-            max={10}
-            step={1}
-          />
-        </div>
-        <div className="flex justify-center gap-8">
-          <VariableLabel
-            elementId="var-K"
-            value={K}
-            name="Kinetic Energy"
-            isHovered={kHovered}
-            onHover={setKHovered}
-          />
-          <VariableLabel
-            elementId="var-v"
-            value={v}
-            name="Velocity"
-            isHovered={vHovered}
-            onHover={setVHovered}
-            onChange={setV}
-            min={0}
-            max={10}
-            step={1}
-          />
-        </div>
+      <FormulaContainer>
+        <Formula latex={latex} />
+        <VariableHitArea
+          elementId="var-K"
+          isHovered={kHovered}
+          onHover={setKHovered}
+        />
+        <VariableHitArea
+          elementId="var-v"
+          isHovered={vHovered}
+          onHover={setVHovered}
+          value={v}
+          onChange={setV}
+          min={0}
+          max={10}
+          step={1}
+        />
+        <VariableLabel
+          elementId="var-K"
+          value={K}
+          name="Kinetic Energy"
+          isHovered={kHovered}
+          onHover={setKHovered}
+        />
+        <VariableLabel
+          elementId="var-v"
+          value={v}
+          name="Velocity"
+          isHovered={vHovered}
+          onHover={setVHovered}
+          onChange={setV}
+          min={0}
+          max={10}
+          step={1}
+        />
       </FormulaContainer>
     </div>
   );
