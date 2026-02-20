@@ -9,10 +9,14 @@ const config: Config = {
 
 function App() {
   return (
-    <Provider config={config}>
-      <Formula id="" style={{ height: "300px", width: "700px" }} />
-      <StepControl />
-    </Provider>
+    <div className="flex flex-col items-center h-screen">
+      <Provider config={config}>
+        <Formula id="" style={{ height: "300px", width: "700px" }} />
+        <div style={{ width: "400px" }}>
+          <StepControl />
+        </div>
+      </Provider>
+    </div>
   );
 }
 
