@@ -11,12 +11,14 @@ import Tutorial1 from "./examples/Tutorial1";
 import Tutorial1Solution from "./examples/Tutorial1Solution";
 import Tutorial2 from "./examples/Tutorial2";
 import Tutorial2Solution from "./examples/Tutorial2Solution";
+import Task from "./examples/Task";
 
 type ExampleKey =
   | "tutorial1"
   | "tutorial1Solution"
   | "tutorial2"
-  | "tutorial2Solution";
+  | "tutorial2Solution"
+  | "task";
 
 const examples: Record<
   ExampleKey,
@@ -41,6 +43,11 @@ const examples: Record<
     name: "Tutorial 2: Solution",
     path: "/tutorial-2/solution",
     component: Tutorial2Solution,
+  },
+  task: {
+    name: "Task",
+    path: "/task",
+    component: Task,
   },
 };
 
