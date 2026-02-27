@@ -18,10 +18,10 @@
     "@xyflow/react": "^12.10.0",
     "better-react-mathjax": "^2.3.0",
     "d3": "^7.9.0",
-    "math-notation": "^0.1.1",
     "katex": "^0.16.27",
     "lodash": "^4.17.21",
     "lucide-react": "^0.400.0",
+    "math-notation": "^0.1.1",
     "mathjax-full": "^3.2.2",
     "mathjs": "^13.2.3",
     "mobx": "^6.15.0",
@@ -29,7 +29,8 @@
     "mobx-state-tree": "^5.4.2",
     "plotly.js-dist": "^3.3.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
