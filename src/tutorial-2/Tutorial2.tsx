@@ -4,37 +4,47 @@ import { formulaContainerStyle } from "../styles";
 const config: Config = {
   formulas: [
     {
-      id: "cross-product",
-      latex:
-        "\\vec{a} \\times \\vec{b} = \\begin{pmatrix} a_1 \\\\ a_2 \\end{pmatrix} \\times \\begin{pmatrix} b_1 \\\\ b_2 \\end{pmatrix} = a_1 b_2 - a_2 b_1 = \\vec{c}",
+      id: "gravity",
+      latex: "\\vec{F} = G \\frac{m_1 m_2}{r^2}",
     },
   ],
   variables: {
-    "\\vec{a}": {
-      default: [3, 2],
-      name: "Vector a",
+    "\\vec{F}": {
+      default: 0,
+      name: "Gravitational Force",
+      precision: 2,
     },
-    "\\vec{b}": {
-      default: [1, 4],
-      name: "Vector b",
+    G: {
+      default: 6.674e-11,
+      name: "Gravitational Constant",
+      sigFigs: 4,
     },
-    a_1: {},
-    a_2: {},
-    b_1: {},
-    b_2: {},
-    "\\vec{c}": { name: "Cross product result" },
+    m_1: {
+      default: 5.972e24,
+      name: "Mass of Earth",
+      sigFigs: 4,
+    },
+    m_2: {
+      default: 80,
+      name: "Mass of Person",
+      precision: 0,
+    },
+    r: {
+      default: 6.371e6,
+      name: "Earth's radius",
+      sigFigs: 4,
+    },
   },
   semantics: function ({ vars }) {
-    var a = vars["\\vec{a}"];
-    var b = vars["\\vec{b}"];
-    vars.a_1 = a[0];
-    vars.a_2 = a[1];
-    vars.b_1 = b[0];
-    vars.b_2 = b[1];
-    var term1 = vars.a_1 * vars.b_2;
-    var term2 = vars.a_2 * vars.b_1;
-    var result = term1 - term2;
-    vars["\\vec{c}"] = result;
+    var G = vars.G;
+    var m1 = vars.m_1;
+    var m2 = vars.m_2;
+    var r = vars.r;
+    var product = m1 * m2;
+    var squared = r * r;
+    var fraction = product / squared;
+    var force = G * fraction;
+    vars["\\vec{F}"] = force;
   },
   fontSize: 1.5,
 };
@@ -42,7 +52,7 @@ const config: Config = {
 export default function Tutorial2() {
   return (
     <Provider config={config}>
-      <Formula id="cross-product" style={formulaContainerStyle} />
+      <Formula id="gravity" style={formulaContainerStyle} />
     </Provider>
   );
 }

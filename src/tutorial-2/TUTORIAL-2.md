@@ -12,42 +12,52 @@ This tutorial builds on Tutorial 1. You should already know how to create a conf
 
 ### Starting Point
 
-Open `Tutorial2.tsx`. You'll find a working cross product formula already set up:
+Open `Tutorial2.tsx`. You'll find a working gravitational force formula already set up:
 
-- **Formula**: The 2D cross product equation is defined in LaTeX
-- **Variables**: Vectors `\vec{a}` and `\vec{b}` with their components `a_1`, `a_2`, `b_1`, `b_2`, plus the result `\vec{c}`
-- **Semantics**: The calculation extracts vector components, computes `term1 = a_1 * b_2`, `term2 = a_2 * b_1`, and assigns `result = term1 - term2` to `\vec{c}`
+- **Formula**: Newton's law of universal gravitation: $\vec{F} = G \frac{m_1 m_2}{r^2}$
+- **Variables**: `G` (gravitational constant), `m_1` (mass of Earth), `m_2` (mass of a person), `r` (Earth's radius), and `\vec{F}` (the resulting force)
+- **Semantics**: The calculation multiplies the masses, squares the distance, and computes the gravitational force
 
 The formula displays and computes correctly, but there's no stepping — readers see everything at once. Your task is to add step-by-step navigation so readers can follow the calculation one piece at a time.
 
-#### Array Variables
+#### Scientific Notation and Significant Figures
 
-Notice that `\vec{a}` and `\vec{b}` store their components as arrays:
+Notice that variables use scientific notation and specify significant figures:
 
 ```tsx
-"\\vec{a}": { default: [3, 2], name: "Vector a" },
-"\\vec{b}": { default: [1, 4], name: "Vector b" },
+G: {
+  default: 6.674e-11,
+  name: "Gravitational Constant",
+  sigFigs: 4,
+},
+m_1: {
+  default: 5.972e24,
+  name: "Mass of Earth",
+  sigFigs: 4,
+},
 ```
 
-This keeps the vector definition clean — one variable holds both components.
+The `sigFigs` option controls how many significant figures display for very large or small numbers.
 
-#### Setting Variable Values in Semantics
+#### Computing Derived Values
 
-The component variables `a_1`, `a_2`, `b_1`, `b_2` are defined in the config but have no `default` value. Instead, the semantics function extracts values from the array variables and assigns them:
+The semantics function reads variable values and computes the result:
 
 ```tsx
 semantics: function ({ vars }) {
-  var a = vars["\\vec{a}"];
-  var b = vars["\\vec{b}"];
-  vars.a_1 = a[0];  // Assigns 3 to a_1
-  vars.a_2 = a[1];  // Assigns 2 to a_2
-  vars.b_1 = b[0];  // Assigns 1 to b_1
-  vars.b_2 = b[1];  // Assigns 4 to b_2
-  // ...
+  var G = vars.G;
+  var m1 = vars.m_1;
+  var m2 = vars.m_2;
+  var r = vars.r;
+  var product = m1 * m2;
+  var squared = r * r;
+  var fraction = product / squared;
+  var force = G * fraction;
+  vars["\\vec{F}"] = force;
 }
 ```
 
-This pattern — reading from `vars` and writing back to `vars` — is how you derive values from other variables. Once assigned, these values display in the formula just like any other variable.
+This pattern — reading from `vars`, computing intermediate values, and writing the result back to `vars` — is how you build up complex calculations.
 
 ---
 
@@ -76,21 +86,22 @@ Call `step()` at key points in your calculation:
 
 ```tsx
 semantics: function ({ vars, step }) {
-  var term1 = vars.a_1 * vars.b_2;
+  var m1 = vars.m_1;
+  var m2 = vars.m_2;
+  var product = m1 * m2;
   step({
-    description: "Multiply $a_1$ by $b_2$",
     labels: {
-      a_1: vars.a_1,
-      b_2: vars.b_2,
+      m_1: m1,
+      m_2: m2,
     },
   });
 
-  var term2 = vars.a_2 * vars.b_1;
+  var r = vars.r;
+  var squared = r * r;
   step({
-    description: "Multiply $a_2$ by $b_1$",
+    description: "Square the distance",
     labels: {
-      a_2: vars.a_2,
-      b_1: vars.b_1,
+      r: r,
     },
   });
 }
@@ -104,19 +115,19 @@ The `labels` object maps keys to display values. Keys can be **variable keys** o
 
 ```tsx
 step({
-  description: "Compute the first product",
   labels: {
-    a_1: vars.a_1,           // Variable key — shows value on that variable
-    "a_1 b_2": "= 12",       // Expression scope — highlights that portion of the formula
+    m_1: m1,                                    // Variable key — shows value on that variable
+    m_2: m2,
+    "m_1 m_2": "Multiply the two masses = ...", // Expression scope — highlights that portion of the formula
   },
 });
 ```
 
 Expression scope strings must be exact substrings of the formula's LaTeX:
 
-- `"a_1 b_2"` highlights the first product
-- `"a_2 b_1"` highlights the second product
-- `"a_1 b_2 - a_2 b_1"` highlights the full result expression
+- `"m_1 m_2"` highlights the mass product in the numerator
+- `"r^2"` highlights the squared distance in the denominator
+- `"\\frac{m_1 m_2}{r^2}"` highlights the entire fraction
 
 ### Step 4: Format numbers with the `latex()` helper
 
@@ -127,14 +138,25 @@ Use `latex()` to format computed values in labels:
 ```tsx
 import { latex } from "math-notation";
 
-var term1 = vars.a_1 * vars.b_2;
+var product = m1 * m2;
 step({
-  description: "First product: " + latex(term1).precision(0),
   labels: {
-    "a_1 b_2": latex(term1).precision(0),
+    m_1: m1,
+    m_2: m2,
+    "m_1 m_2": "Multiply the two masses = " + latex(product).sigfigs(4),
   },
 });
 ```
+
+You can use **string concatenation** to combine descriptive text with formatted numbers:
+
+```tsx
+"m_1 m_2": "Multiply the two masses = " + latex(product).sigfigs(4),
+```
+
+This creates readable labels that explain what's happening alongside the computed value.
+
+For scientific notation and large numbers, use `.sigfigs()` to control significant figures. For decimal places, use `.precision()`.
 
 ### Step 5: Add the StepControl component
 

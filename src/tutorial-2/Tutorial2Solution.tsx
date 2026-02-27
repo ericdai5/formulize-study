@@ -10,71 +10,74 @@ import { formulaContainerStyle } from "../styles";
 const config: Config = {
   formulas: [
     {
-      id: "cross-product",
-      latex:
-        "\\vec{a} \\times \\vec{b} = \\begin{pmatrix} a_1 \\\\ a_2 \\end{pmatrix} \\times \\begin{pmatrix} b_1 \\\\ b_2 \\end{pmatrix} = a_1 b_2 - a_2 b_1 = \\vec{c}",
+      id: "gravity",
+      latex: "\\vec{F} = G \\frac{m_1 m_2}{r^2}",
     },
   ],
   variables: {
-    "\\vec{a}": {
-      default: [3, 2],
-      name: "Vector a",
+    "\\vec{F}": {
+      default: 0,
+      name: "Gravitational Force",
+      precision: 2,
     },
-    "\\vec{b}": {
-      default: [1, 4],
-      name: "Vector b",
+    G: {
+      default: 6.674e-11,
+      name: "Gravitational Constant",
+      sigFigs: 4,
     },
-    a_1: {},
-    a_2: {},
-    b_1: {},
-    b_2: {},
-    "\\vec{c}": { name: "Cross product result" },
+    m_1: {
+      default: 5.972e24,
+      name: "Mass of Earth",
+      sigFigs: 4,
+    },
+    m_2: {
+      default: 80,
+      name: "Mass of Person",
+      precision: 0,
+    },
+    r: {
+      default: 6.371e6,
+      name: "Earth's radius",
+      sigFigs: 4,
+    },
   },
   stepping: true,
   semantics: function ({ vars, step }) {
-    // Extract components from the array variables
-    var a = vars["\\vec{a}"];
-    var b = vars["\\vec{b}"];
+    var G = vars.G;
+    var m1 = vars.m_1;
+    var m2 = vars.m_2;
+    var r = vars.r;
 
-    // Assign to individual component variables so they display in the formula
-    vars.a_1 = a[0];
-    vars.a_2 = a[1];
-    vars.b_1 = b[0];
-    vars.b_2 = b[1];
-
-    // Step 1: Compute a₁b₂
-    var term1 = vars.a_1 * vars.b_2;
+    // Step 1: Multiply the two masses
+    var product = m1 * m2;
     step({
-      description: "Multiply diagonally",
       labels: {
-        "\\vec{a}": vars["\\vec{a}"],
-        "\\vec{b}": vars["\\vec{b}"],
-        a_1: vars.a_1,
-        b_2: vars.b_2,
-        "a_1 b_2": "$a_1 \\cdot b_2 = $ " + latex(term1).precision(0),
+        m_1: m1,
+        m_2: m2,
+        "m_1 m_2": "Multiply the two masses = " + latex(product).sigfigs(4),
       },
     });
 
-    // Step 2: Compute a₂b₁
-    var term2 = vars.a_2 * vars.b_1;
+    // Step 2: Square the distance
+    var squared = r * r;
     step({
-      description: "Multiply the other diagonal",
+      description: "Square the distance = " + latex(squared).sigfigs(4),
       labels: {
-        a_2: vars.a_2,
-        b_1: vars.b_1,
-        "a_2 b_1": "$a_2 \\cdot b_1 = $ " + latex(term2).precision(0),
+        r: r,
+        "r^2": null,
       },
     });
 
-    // Step 3: Subtract to get the result
-    var result = term1 - term2;
-    vars["\\vec{c}"] = result;
+    // Step 3: Compute the final force
+    var fraction = product / squared;
+    var force = G * fraction;
+    vars["\\vec{F}"] = force;
     step({
-      description: "Subtract to get vector $\\vec{c}$",
+      description: "Multiply by $G$ to get force",
       labels: {
-        "a_1 b_2": "$a_1 b_2 = $ " + latex(term1).precision(0),
-        "a_2 b_1": "$a_2 b_1 = $ " + latex(term2).precision(0),
-        "\\vec{c}": latex(vars["\\vec{c}"]).precision(0),
+        "\\vec{F}": latex(vars["\\vec{F}"]).precision(2),
+        G: vars.G,
+        "\\frac{m_1 m_2}{r^2}": latex(fraction).sigfigs(4),
       },
     });
   },
@@ -84,7 +87,7 @@ const config: Config = {
 export default function Tutorial2Solution() {
   return (
     <Provider config={config}>
-      <Formula id="cross-product" style={formulaContainerStyle} />
+      <Formula id="gravity" style={formulaContainerStyle} />
       <div style={{ marginTop: "10px" }}>
         <StepControl />
       </div>
