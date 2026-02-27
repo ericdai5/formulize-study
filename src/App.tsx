@@ -7,11 +7,11 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-import Tutorial1 from "./examples/Tutorial1";
-import Tutorial1Solution from "./examples/Tutorial1Solution";
-import Tutorial2 from "./examples/Tutorial2";
-import Tutorial2Solution from "./examples/Tutorial2Solution";
-import Task from "./examples/Task";
+import Tutorial1 from "./tutorial-1/Tutorial1";
+import Tutorial1Solution from "./tutorial-1/Tutorial1Solution";
+import Tutorial2 from "./tutorial-2/Tutorial2";
+import Tutorial2Solution from "./tutorial-2/Tutorial2Solution";
+import Task from "./task/Task";
 
 type ExampleKey =
   | "tutorial1"
