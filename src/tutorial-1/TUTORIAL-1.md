@@ -1,12 +1,22 @@
 ## How Interactive Formulas are Implemented
 
+### What are interactive formulas?
+
+Mathematical formulas can be hard to learn from when they just sit on a page. An interactive formula lets readers change values, see results update in real time, and build intuition by playing around — turning a static equation into something they can explore.
+
+### What this tutorial covers
+
+This tutorial walks you through how to build interactive formulas using a custom library designed for this purpose. By the end, you'll be able to take a LaTeX equation, label its variables, wire up the math, and let readers drag values to see what happens.
+
+### A note on feedback
+
+As you work through this tutorial, please let us know if anything about the library feels confusing, unclear, or frustrating. We're actively looking for feedback on the API design and documentation — your observations are valuable even if you're unsure whether something is a "real" issue.
+
 ---
 
 ### Step 1: Define a formula config
 
-Before you can build an interactive formula, you need somewhere to put all the pieces. The config object is that container.
-
-Create a configuration object that defines the interactive formula. It contains the following parts — `formulas`, `variables`, and `semantics`.
+In this library, everything you specify about how to make a formula interactive goes into a "Config" object. **Create one such object now.** It contains three parts — `formulas`, `variables`, and `semantics` — which you will fill out in the following steps:
 
 ```tsx
 const config: Config = {
@@ -16,11 +26,13 @@ const config: Config = {
 };
 ```
 
+- `formulas` — the LaTeX equations to display
+- `variables` — the variables and their properties
+- `semantics` — a function that defines how variables relate to each other
+
 ### Step 2: Write the formula
 
-Now let's give readers something to look at — the equation itself.
-
-Write the formula in LaTeX as an entry in the `formulas` array. Assign the entry a unique `id`.
+Give readers something to look at — the equation itself, written in LaTeX. **Add the following entry to the `formulas` array:**
 
 ```tsx
 formulas: [
@@ -31,13 +43,59 @@ formulas: [
 ],
 ```
 
-### Step 3: Define the variables
+Write the formula in LaTeX as an entry in the `formulas` array. Assign the entry a unique `id`. Each entry has an `id` (a unique name you'll reference later) and a `latex` string containing the equation.
 
-A formula full of symbols can feel intimidating. By defining variables, you give each symbol a name and a value — turning abstract notation into something readers can understand.
+### Step 3: Display the formula
 
-Specify which variables in the formula should be labeled and tracked. The variable key must **exactly match** the corresponding LaTeX token (case-sensitive). Symbols in the LaTeX that are not listed in `variables` render as plain, non-interactive notation. When a variable key contains LaTeX commands or special characters (like `\\vec{F}`), use the escaped LaTeX string as the key and quote it. Subscripted keys like `m_1` can be used as unquoted object keys.
+Render the formula on screen so you can see your progress as you build. The library provides two React components for this: `Provider` (which makes the config available to everything inside it) and `Formula` (which renders a specific equation). **Replace your app's return statement with the following JSX:**
 
-Use `sigFigs` to control how many significant figures are displayed, or `precision` to control decimal places. Pick one or the other — if you define both, `sigFigs` takes precedence and `precision` is ignored.
+```tsx
+<Provider config={config}>
+  <Formula id="gravity" />
+</Provider>
+```
+
+`Provider` wraps everything and receives the `config` prop. `Formula` renders a formula by its `id`, which must match an entry in the `formulas` array.
+
+### Step 4: Run the app
+
+**Run `npm run dev`** in your terminal to start the development server, then open the URL it prints. You should see the equation rendered on screen — but the symbols are just plain notation for now. Keep the dev server running; it will update automatically as you make changes in the following steps.
+
+### Step 5: Define the variables
+
+Turn abstract symbols into something readers can understand by defining variables. We'll build up the variables config one property at a time.
+
+The variable key must **exactly match** the corresponding LaTeX token (case-sensitive). Symbols in the LaTeX that are not listed in `variables` render as plain, non-interactive notation. When a variable key contains LaTeX commands or special characters (like `\\vec{F}`), use the escaped LaTeX string as the key and quote it. Subscripted keys like `m_1` can be used as unquoted object keys.
+
+#### 5a: Label each variable with `name`
+
+Give each symbol a human-readable name so readers know what it represents. **Add a `variables` object with a `name` for each variable:**
+
+```tsx
+variables: {
+  "\\vec{F}": {
+    name: "Gravitational Force",
+  },
+  G: {
+    name: "Gravitational Constant",
+  },
+  m_1: {
+    name: "Mass of Earth",
+  },
+  m_2: {
+    name: "Mass of Person",
+  },
+  r: {
+    name: "Earth's radius",
+  },
+},
+```
+
+`name` is the label displayed to readers next to the symbol in the rendered formula.
+
+#### 5b: Set a starting value with `default`
+
+Give each variable an initial numeric value. **Add a `default` property to `G`, `m_1`, `m_2`, and `r`:**
 
 ```tsx
 variables: {
@@ -47,12 +105,75 @@ variables: {
   G: {
     default: 6.674e-11,
     name: "Gravitational Constant",
-    sigFigs: 4,
   },
   m_1: {
     default: 5.972e24,
     name: "Mass of Earth",
-    sigFigs: 4,
+  },
+  m_2: {
+    default: 80,
+    name: "Mass of Person",
+  },
+  r: {
+    default: 6.371e6,
+    name: "Earth's radius",
+  },
+},
+```
+
+`default` sets the value that is displayed when the formula first renders. `\\vec{F}` has no `default` — its value will be computed by the semantics function later.
+
+#### 5c: Control displayed digits with `sigFigs`
+
+Limit how many significant figures are shown for a variable's value. **Add `sigFigs: 3` to `G`, `m_1`, and `r`:**
+
+```tsx
+G: {
+  default: 6.674e-11,
+  name: "Gravitational Constant",
+  sigFigs: 3,
+},
+m_1: {
+  default: 5.972e24,
+  name: "Mass of Earth",
+  sigFigs: 3,
+},
+```
+
+`sigFigs: 3` displays `G` as `6.67 × 10⁻¹¹` (3 significant figures) rather than showing all available digits.
+
+#### 5d: Control decimal places with `precision`
+
+Limit how many decimal places are shown for a variable's value. **Add `precision: 0` to `m_2`:**
+
+```tsx
+m_2: {
+  default: 80,
+  name: "Mass of Person",
+  precision: 0,
+},
+```
+
+`precision: 0` displays `m_2` as `80` with no decimal places. Pick one or the other — if you define both `sigFigs` and `precision` on the same variable, `sigFigs` takes precedence and `precision` is ignored.
+
+#### Full variables config
+
+Putting it all together:
+
+```tsx
+variables: {
+  "\\vec{F}": {
+    name: "Gravitational Force",
+  },
+  G: {
+    default: 6.674e-11,
+    name: "Gravitational Constant",
+    sigFigs: 3,
+  },
+  m_1: {
+    default: 5.972e24,
+    name: "Mass of Earth",
+    sigFigs: 3,
   },
   m_2: {
     default: 80,
@@ -62,16 +183,14 @@ variables: {
   r: {
     default: 6.371e6,
     name: "Earth's radius",
-    sigFigs: 4,
+    sigFigs: 3,
   },
 },
 ```
 
-### Step 4: Define the formula `semantics`
+### Step 6: Define the formula `semantics`
 
-So far, the formula just displays symbols. The semantics function teaches it how to actually compute — how the inputs produce the output.
-
-Define how input variables map to output variables in the `semantics` function. Access variables as properties of the `vars` object. Use dot notation for simple and subscripted keys (`vars.G`, `vars.m_1`). For keys that contain special characters, use bracket notation (`vars["\\vec{F}"]`).
+To allow someone to play around with a formula in the intended way, there has to be a way to map from input variable values to output variable values. Define that mapping with a `semantics` function. **Add the following `semantics` function to your config:**
 
 ```tsx
 semantics: function ({ vars }) {
@@ -82,27 +201,11 @@ semantics: function ({ vars }) {
 },
 ```
 
-You can read this as: multiply `m_1` and `m_2`, square `r`, compute the gravitational force, and assign the result to `\\vec{F}`.
+Access variables as properties of the `vars` object. Use dot notation for simple and subscripted keys (`vars.G`, `vars.m_1`). For keys that contain special characters, use bracket notation (`vars["\\vec{F}"]`). Reading from `vars` gets a variable's current value; writing to `vars` sets a variable's value.
 
-### Step 5: Render with `Provider` and `Formula`
+### Step 7: Make variables interactive with drag
 
-With the config ready, it's time to see your work on screen.
-
-Render the formula using the `Provider` and `Formula` components. `Provider` wraps everything and receives the `config` prop. `Formula` renders a formula by its `id`.
-
-```tsx
-<Provider config={config}>
-  <Formula id="gravity" style={{ height: "300px", width: "700px" }} />
-</Provider>
-```
-
-At this point you have a working formula — variables are labeled, values are displayed, and the semantics function computes the result.
-
-### Step 6: Make variables interactive with drag
-
-Static formulas show one answer. But what if readers could ask "what happens if I change this?" and discover the answer themselves? That's what drag interaction enables.
-
-To let users change variable values by dragging, add `input`, `default`, `range`, and `step` properties to the variables you want to be interactive. For example, to make `m_2` (mass of the person) draggable:
+Let readers change a variable's value by dragging it, so they can explore how the formula responds. **Change your `m_2` variable to add `input`, `range`, and `step`:**
 
 ```tsx
 m_2: {
@@ -115,12 +218,11 @@ m_2: {
 },
 ```
 
-- `input: "drag"` enables drag interaction on the variable
-- `default` sets the starting value
-- `range` sets the minimum and maximum values
-- `step` sets the increment size when dragging
+- `input: "drag"` — enables drag interaction on the variable
+- `range: [1, 200]` — sets the minimum and maximum values the user can drag to
+- `step: 1` — sets the increment size when dragging
 
-You can make multiple variables draggable. Here is the full `variables` config with `m_2` and `r` both interactive:
+**Now do the same for `r`.** You can make multiple variables draggable. Here is the full `variables` config with `m_2` and `r` both interactive:
 
 ```tsx
 variables: {
@@ -130,12 +232,12 @@ variables: {
   G: {
     default: 6.674e-11,
     name: "Gravitational Constant",
-    sigFigs: 4,
+    sigFigs: 3,
   },
   m_1: {
     default: 5.972e24,
     name: "Mass of Earth",
-    sigFigs: 4,
+    sigFigs: 3,
   },
   m_2: {
     input: "drag",
@@ -151,7 +253,7 @@ variables: {
     range: [1e6, 1e7],
     step: 1e4,
     name: "Earth's radius",
-    sigFigs: 4,
+    sigFigs: 3,
   },
 },
 ```
@@ -176,29 +278,29 @@ The **variable key** is the single thread connecting the **LaTeX formula**, the 
 
 Simple keys (like `r`, `G`) and subscripted keys (like `m_1`) use dot notation. Keys with LaTeX commands (like `\\vec{F}`) must be quoted in the config and accessed with bracket notation in semantics.
 
-| Layer                | Simple key `"r"`               | Subscripted key `"m_1"`           | LaTeX key `"\\vec{F}"`            |
-| -------------------- | ------------------------------ | --------------------------------- | --------------------------------- |
-| **LaTeX**            | `r` in `"...r^2"`              | `m_1` in `"...m_1 m_2..."`        | `\\vec{F}` in `"\\vec{F} = ..."`  |
-| **Variables config** | `r: { default: 6.371e6, ... }` | `m_1: { default: 5.972e24, ... }` | `"\\vec{F}": { name: "..." }`     |
-| **Semantics**        | `vars.r`                       | `vars.m_1`                        | `vars["\\vec{F}"]`                |
+| Layer                | Simple key `"r"`               | Subscripted key `"m_1"`           | LaTeX key `"\\vec{F}"`           |
+| -------------------- | ------------------------------ | --------------------------------- | -------------------------------- |
+| **LaTeX**            | `r` in `"...r^2"`              | `m_1` in `"...m_1 m_2..."`        | `\\vec{F}` in `"\\vec{F} = ..."` |
+| **Variables config** | `r: { default: 6.371e6, ... }` | `m_1: { default: 5.972e24, ... }` | `"\\vec{F}": { name: "..." }`    |
+| **Semantics**        | `vars.r`                       | `vars.m_1`                        | `vars["\\vec{F}"]`               |
 
 ### Variable properties
 
-| Property    | Description                                     | Example                 | Required?                 |
-| ----------- | ----------------------------------------------- | ----------------------- | ------------------------- |
-| `name`      | Explanatory label displayed to users            | `name: "Mass of Earth"` | No                        |
-| `default`   | The starting value                              | `default: 5.972e24`     | For variables with values |
-| `sigFigs`   | Number of significant figures to display        | `sigFigs: 4`            | No                        |
-| `precision` | Number of decimal places to display             | `precision: 0`          | No                        |
-| `input`     | How the user interacts with it                  | `input: "drag"`         | For interactive variables |
-| `range`     | Min and max values for input variables          | `range: [0, 100]`       | For interactive variables |
-| `step`      | Increment size when dragging                    | `step: 0.1`             | For interactive variables |
+| Property    | Description                              | Example                 | Required?                 |
+| ----------- | ---------------------------------------- | ----------------------- | ------------------------- |
+| `name`      | Explanatory label displayed to users     | `name: "Mass of Earth"` | No                        |
+| `default`   | The starting value                       | `default: 5.972e24`     | For variables with values |
+| `sigFigs`   | Number of significant figures to display | `sigFigs: 3`            | No                        |
+| `precision` | Number of decimal places to display      | `precision: 0`          | No                        |
+| `input`     | How the user interacts with it           | `input: "drag"`         | For interactive variables |
+| `range`     | Min and max values for input variables   | `range: [0, 100]`       | For interactive variables |
+| `step`      | Increment size when dragging             | `step: 0.1`             | For interactive variables |
 
 **Note:** `sigFigs` and `precision` are mutually exclusive. If both are defined, `sigFigs` takes precedence.
 
 ### Components
 
-| Component     | Purpose                                                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `Provider`    | Wraps everything; receives the `config` prop.                                                                                 |
-| `Formula`     | Renders a formula by `id`; must match an entry in `formulas`.                                                                 |
+| Component  | Purpose                                                       |
+| ---------- | ------------------------------------------------------------- |
+| `Provider` | Wraps everything; receives the `config` prop.                 |
+| `Formula`  | Renders a formula by `id`; must match an entry in `formulas`. |

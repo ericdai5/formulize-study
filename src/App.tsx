@@ -11,14 +11,16 @@ import Tutorial1 from "./tutorial-1/Tutorial1";
 import Tutorial1Solution from "./tutorial-1/Tutorial1Solution";
 import Tutorial2 from "./tutorial-2/Tutorial2";
 import Tutorial2Solution from "./tutorial-2/Tutorial2Solution";
-import Task from "./task/Task";
+import Task1 from "./task/Task1";
+import Task2 from "./task/Task2";
 
 type ExampleKey =
   | "tutorial1"
   | "tutorial1Solution"
   | "tutorial2"
   | "tutorial2Solution"
-  | "task";
+  | "task1"
+  | "task2";
 
 const examples: Record<
   ExampleKey,
@@ -44,10 +46,15 @@ const examples: Record<
     path: "/tutorial-2/solution",
     component: Tutorial2Solution,
   },
-  task: {
-    name: "Task",
-    path: "/task",
-    component: Task,
+  task1: {
+    name: "Task 1",
+    path: "/task-1",
+    component: Task1,
+  },
+  task2: {
+    name: "Task 2",
+    path: "/task-2",
+    component: Task2,
   },
 };
 
@@ -57,7 +64,7 @@ function ExampleSelector() {
 
   const currentKey =
     (Object.entries(examples).find(
-      ([, { path }]) => path === location.pathname
+      ([, { path }]) => path === location.pathname,
     )?.[0] as ExampleKey) || "tutorial1";
 
   return (
@@ -88,9 +95,11 @@ function AppLayout() {
       <ExampleSelector />
       <Routes>
         <Route path="/" element={<Navigate to="/tutorial-1" replace />} />
-        {Object.entries(examples).map(([key, { path, component: Component }]) => (
-          <Route key={key} path={path} element={<Component />} />
-        ))}
+        {Object.entries(examples).map(
+          ([key, { path, component: Component }]) => (
+            <Route key={key} path={path} element={<Component />} />
+          ),
+        )}
       </Routes>
     </div>
   );
