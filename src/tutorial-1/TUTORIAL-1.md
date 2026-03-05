@@ -10,7 +10,7 @@ This tutorial walks you through how to build interactive formulas using a custom
 
 ### A note on feedback
 
-As you work through this tutorial, please let us know if anything about the library feels confusing, unclear, or frustrating. We're actively looking for feedback on the API design and documentation — your observations are valuable even if you're unsure whether something is a "real" issue.
+As you work through this tutorial, please think aloud — narrate what you're doing, what you expect to happen, and what you notice along the way. There are no wrong observations. We're interested in hearing your thought process as you learn the library, not just the end result.
 
 ---
 
