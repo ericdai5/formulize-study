@@ -12,7 +12,9 @@ import Tutorial1Solution from "./tutorial-1/Tutorial1Solution";
 import Tutorial2 from "./tutorial-2/Tutorial2";
 import Tutorial2Solution from "./tutorial-2/Tutorial2Solution";
 import Task1 from "./task/Task1";
+import Task1Solution from "./task/Task1Solution";
 import Task2 from "./task/Task2";
+import Task2Solution from "./task/Task2Solution";
 
 type ExampleKey =
   | "tutorial1"
@@ -20,7 +22,9 @@ type ExampleKey =
   | "tutorial2"
   | "tutorial2Solution"
   | "task1"
-  | "task2";
+  | "task1Solution"
+  | "task2"
+  | "task2Solution";
 
 const examples: Record<
   ExampleKey,
@@ -51,10 +55,20 @@ const examples: Record<
     path: "/task-1",
     component: Task1,
   },
+  task1Solution: {
+    name: "Task 1: Solution",
+    path: "/task-1/solution",
+    component: Task1Solution,
+  },
   task2: {
     name: "Task 2",
     path: "/task-2",
     component: Task2,
+  },
+  task2Solution: {
+    name: "Task 2: Solution",
+    path: "/task-2/solution",
+    component: Task2Solution,
   },
 };
 

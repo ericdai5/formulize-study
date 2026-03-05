@@ -1,13 +1,7 @@
-import { Formula, Provider, latex, type Config } from "math-notation";
-import { formulaContainerStyle } from "../styles";
+import { Formula, Provider, type Config } from "math-notation";
 
 const config: Config = {
-  formulas: [
-    {
-      id: "expected-value",
-      latex: "",
-    },
-  ],
+  formulas: [],
   variables: {},
   semantics: function ({ vars }) {},
   fontSize: 1.5,
@@ -16,7 +10,7 @@ const config: Config = {
 export default function Task1() {
   return (
     <Provider config={config}>
-      <Formula id="expected-value" style={formulaContainerStyle} />
+      <Formula id="radioactive-decay" />
     </Provider>
   );
 }

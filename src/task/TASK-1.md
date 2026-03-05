@@ -1,6 +1,27 @@
-# Task 1: Expected Value Formula
+# Task 1: Radioactive Decay Formula
 
-In this task, you will build an interactive formula that displays and computes expected value. The starter code provides an empty canvas with the essential imports already in place.
+## About the formula
+
+Radioactive decay describes how unstable atoms break down over time. Every radioactive substance has a characteristic rate at which its atoms decay — some fast (in fractions of a second), some very slowly (over billions of years). The key insight is that the rate of decay is proportional to how many atoms are left: the more atoms you have, the more decay events happen per second, but each individual atom has the same fixed probability of decaying in any given moment.
+
+This leads to the **exponential decay formula**:
+
+$$
+N(t) = N_0 \cdot e^{-\lambda t}
+$$
+
+- $N_0$ is how many atoms you start with
+- $\lambda$ (lambda) is the **decay constant** — a number specific to each substance that captures how quickly it decays. A larger $\lambda$ means faster decay.
+- $t$ is the time that has passed
+- $N(t)$ is how many atoms remain after time $t$
+
+The formula says: take the initial count, and multiply it by $e^{-\lambda t}$, which is a number that starts at 1 (when $t = 0$) and shrinks toward 0 as time increases. The result is a smooth curve that never quite reaches zero — there are always *some* atoms left, but fewer and fewer over time.
+
+A useful concept is the **half-life** — the time it takes for half the atoms to decay. For Carbon-14, the half-life is about 5,730 years. This is why Carbon-14 dating works: by measuring how much Carbon-14 remains in an archaeological sample, scientists can estimate how old it is.
+
+---
+
+In this task, you will build an interactive formula that displays and computes radioactive decay. The starter code provides an empty canvas with the essential imports already in place.
 
 ---
 
@@ -18,65 +39,49 @@ const config: Config = {
 };
 ```
 
-Your job is to fill in the config to display and compute the expected value formula.
+Your job is to fill in the config to display and compute the radioactive decay formula.
 
 ---
 
 ## Task
 
-Implement the formula for **expected value** with the following LaTeX:
+Build an interactive formula for radioactive decay using this LaTeX:
 
 ```latex
-E[X] = \sum_{i=1}^{n} x_i \cdot P(x_i)
+N(t) = N_0 \cdot e^{-\lambda t}
 ```
 
+Use the library to make this formula come alive in whatever way you think best helps a reader understand radioactive decay. There's no single right answer — get creative with it.
+
 ---
 
-## Requirements
+## Scenario: Carbon-14 Dating
 
-1. **Formula display** — The formula renders correctly:
+The scenario is Carbon-14 dating of an archaeological sample. Here are the variables and some reasonable starting values:
+
+| Variable        | Meaning                      | Example value     |
+|-----------------|------------------------------|-------------------|
+| $N_0$           | Initial number of atoms      | 1000              |
+| $\lambda$       | Decay constant (per year)    | 0.000121          |
+| $t$             | Time elapsed (years)         | 5730              |
+| $N(t)$          | Remaining atoms (computed)   | ≈ 500             |
+
+With these values, the computation looks like:
 
 $$
-E[X] = \sum_{i=1}^{n} x_i \cdot P(x_i)
+N(t) = 1000 \cdot e^{-0.000121 \times 5730} \approx 500
 $$
 
-2. **Scenario** — A weighted die with these outcomes and probabilities:
+Since Carbon-14 has a half-life of ~5,730 years, roughly half the atoms remain after that time. In JavaScript, use `Math.exp()` to compute $e^x$.
 
-| Outcome | Value ($x_i$) | Probability ($P(x_i)$) |
-|---------|---------------|------------------------|
-| 1       | 1             | 0.1                    |
-| 2       | 2             | 0.2                    |
-| 3       | 3             | 0.3                    |
-| 4       | 4             | 0.4                    |
+## Goal
 
-3. **Variable labels** — Each variable has a descriptive name:
-   - $E[X]$ : Expected Value
-   - $n$ : Number of outcomes
-   - $i$ : Outcome index
-   - $x_i$ : Outcome value
-   - $P(x_i)$ : Probability of outcome
+Make the interactive formula as clear and educational as possible. Imagine a student encountering radioactive decay for the first time — your formula should help them build intuition for how exponential decay works and why half-life is a useful concept.
 
-4. **Correct result** — The semantics function computes the correct expected value:
-   - $E[X] = 1(0.1) + 2(0.2) + 3(0.3) + 4(0.4) = 0.1 + 0.4 + 0.9 + 1.6 = 3.0$
-
-5. **Live updates** — The computed $E[X]$ value displays in the formula.
-
----
-
-## Hints
-
-- Use array variables to store the outcomes and probabilities
-- The semantics function should loop through the arrays to compute the sum
-- Assign the final result to `vars["E[X]"]` so it displays in the formula
-
----
-
-## Feel Free to Experiment
-
-Don't limit yourself to just the requirements above. Feel free to improve the interactive formula in any way that makes it easier to understand. You might try different variable names, add extra labels, adjust the formula layout, or anything else that helps comprehension.
+Feel free to improve the interactive formula in any way that makes it easier to understand. You might try different variable names, add extra labels, adjust the formula layout, or anything else that helps comprehension.
 
 ---
 
 ## Timing
 
-You have **20 minutes** for this part. Once complete, proceed to **Task 2** to add step-by-step walkthroughs.
+You have **20 minutes** for this part. Once complete, proceed to **Task 2**.

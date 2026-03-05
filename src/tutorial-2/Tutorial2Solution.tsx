@@ -1,11 +1,4 @@
-import {
-  Formula,
-  Provider,
-  StepControl,
-  latex,
-  type Config,
-} from "math-notation";
-import { formulaContainerStyle } from "../styles";
+import { Formula, Provider, StepControl, type Config } from "math-notation";
 
 const config: Config = {
   formulas: [
@@ -42,7 +35,7 @@ const config: Config = {
     },
   },
   stepping: true,
-  semantics: function ({ vars, step }) {
+  semantics: function ({ vars, step, latex }) {
     var G = vars.G;
     var m1 = vars.m_1;
     var m2 = vars.m_2;
@@ -87,10 +80,10 @@ const config: Config = {
 export default function Tutorial2Solution() {
   return (
     <Provider config={config}>
-      <Formula id="gravity" style={formulaContainerStyle} />
-      <div style={{ marginTop: "10px" }}>
+      <div style={{ marginBottom: "24px" }}>
         <StepControl />
       </div>
+      <Formula id="gravity" />
     </Provider>
   );
 }
