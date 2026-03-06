@@ -2,7 +2,7 @@
 
 ## About the formula
 
-When you roll a fair six-sided die, every outcome (1 through 6) is equally likely. The average result over many rolls is 3.5 — right in the middle. But what if the die is weighted, so some outcomes are more likely than others? The **expected value** tells you the long-run average in that case.
+Imagine you're at a casino deciding whether to place a bet. You might win big, or you might lose your money — but if you played the same bet hundreds of times, how much would you expect to come out ahead or behind *on average*? That's exactly what **expected value** tells you.
 
 Expected value is one of the most fundamental concepts in probability and statistics. It answers the question: "If I repeated this random process many times, what would the average outcome be?" It shows up everywhere — in gambling (is this bet worth taking?), insurance (how much should a policy cost?), decision-making (which option has the best average payoff?), and machine learning (what's the average error of this model?).
 
@@ -17,7 +17,7 @@ $$
 - $P(x)$ is the probability of that outcome occurring
 - $E$ is the expected value — the probability-weighted average
 
-The formula says: for each possible outcome $x$ in the set $X$, multiply its value by its probability, then add them all up. Outcomes that are more likely contribute more to the average. For example, with a weighted die where 4 comes up 40% of the time but 1 only comes up 10% of the time, the expected value will be pulled toward 4 — it's not just the simple average of the outcomes, but a *weighted* average that accounts for how likely each one is.
+The formula says: for each possible outcome $x$ in the set $X$, multiply its value by its probability, then add them all up. Outcomes that are more likely contribute more to the average. It's not just the simple average of the outcomes, but a *weighted* average that accounts for how likely each one is. If one outcome is much more probable than another, it pulls the expected value toward itself.
 
 ---
 
@@ -55,33 +55,38 @@ Use the library to make this formula come alive in whatever way you think best h
 
 ---
 
-## Scenario: Weighted Die
+## Scenario: Roulette Bet on Red
 
-The scenario is a weighted die where higher numbers are more likely. Here are the variables:
+You're at a roulette table and place a \$10 bet on red. An American roulette wheel has 38 slots: 18 red, 18 black, and 2 green (0 and 00). Each color represents a different outcome for your bet:
+
+- **Red** — you win \$10 (net gain)
+- **Black** — you lose \$10 (net loss)
+- **Green** — you also lose \$10 (net loss)
+
+Even though black and green both lose, they have different probabilities — and that matters for expected value. Here are the variables:
 
 | Variable | Meaning                             |
 |----------|-------------------------------------|
-| $X$      | Set of possible outcomes            |
-| $x$      | A single outcome value              |
-| $P(x)$   | Probability of that outcome         |
+| $X$      | Set of possible net payoffs         |
+| $x$      | A single payoff value               |
+| $P(x)$   | Probability of that payoff          |
 | $E$      | Expected value (computed)           |
 
-And the data for this particular die:
+And the data for this bet, broken out by color:
 
-| Outcome ($x$) | Probability ($P(x)$) |
-|----------------|----------------------|
-| 1              | 0.1                  |
-| 2              | 0.2                  |
-| 3              | 0.3                  |
-| 4              | 0.4                  |
+| Outcome       | Payoff ($x$) | Probability ($P(x)$) |
+|---------------|--------------|----------------------|
+| Red (win)     | +\$10        | 0.47                 |
+| Black (lose)  | -\$10        | 0.47                 |
+| Green (lose)  | -\$10        | 0.06                 |
 
 With these values, the computation looks like:
 
 $$
-E = 1(0.1) + 2(0.2) + 3(0.3) + 4(0.4) = 0.1 + 0.4 + 0.9 + 1.6 = 3.0
+E = 10(0.47) + (-10)(0.47) + (-10)(0.06) = 4.7 + (-4.7) + (-0.6) = -0.6
 $$
 
-The expected value is 3.0 — pulled toward the higher outcomes because they have greater probability.
+The expected value is -\$0.60 — meaning on average, you lose 60 cents every time you place this bet. Notice that the red and black terms nearly cancel each other out; it's the two green slots that create the house edge. Without green, the game would be perfectly fair.
 
 ## Goal
 

@@ -17,16 +17,17 @@ const config: Config = {
     E: {
       default: 0,
       name: "Expected Value",
+      precision: 2,
     },
     x: {
-      name: "Member of X",
+      name: "Net payoff",
     },
     X: {
-      default: [1, 2, 3, 4],
+      default: [10, -10, -10],
     },
     "P(x)": {
-      default: [0.1, 0.2, 0.3, 0.4],
-      name: "Probability of x",
+      default: [0.47, 0.47, 0.06],
+      name: "Probability of payoff",
     },
   },
   stepping: true,
@@ -41,7 +42,7 @@ const config: Config = {
 
       if (i === 0) {
         step({
-          description: "Get a value x from X",
+          description: "Get a payoff x from X",
           labels: { x: xi, X: xValues },
         });
         step({
@@ -58,7 +59,7 @@ const config: Config = {
             x: xi,
             "P(x)": probability,
             "x P(x)":
-              "Weight outcome by probability: " +
+              "Weight payoff by probability: " +
               latex(contribution).precision(2),
           },
         });

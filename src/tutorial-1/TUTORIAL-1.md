@@ -63,39 +63,63 @@ Render the formula on screen so you can see your progress as you build. The libr
 
 ### Step 5: Define the variables
 
-Turn abstract symbols into something readers can understand by defining variables. We'll build up the variables config one property at a time.
+Turn abstract symbols into something readers can understand by defining variables. You don't have to define every symbol in the formula — only the ones you want to label, give values to, or make interactive. Symbols not listed in `variables` render as plain, non-interactive notation.
 
-The variable key must **exactly match** the corresponding LaTeX token (case-sensitive). Symbols in the LaTeX that are not listed in `variables` render as plain, non-interactive notation. When a variable key contains LaTeX commands or special characters (like `\\vec{F}`), use the escaped LaTeX string as the key and quote it. Subscripted keys like `m_1` can be used as unquoted object keys.
+The variable key must **exactly match** the corresponding LaTeX token (case-sensitive). When a variable key contains LaTeX commands or special characters (like `\\vec{F}`), use the escaped LaTeX string as the key and quote it. Subscripted keys like `m_1` can be used as unquoted object keys.
 
-#### 5a: Label each variable with `name`
+We'll start with just one variable and build from there.
 
-Give each symbol a human-readable name so readers know what it represents. **Add a `variables` object with a `name` for each variable:**
+#### 5a: Label a single variable with `name`
+
+Start by defining just one variable — `m_2`, the mass of a person. **Add a `variables` object with a single entry:**
 
 ```tsx
 variables: {
-  "\\vec{F}": {
-    name: "Gravitational Force",
-  },
-  G: {
-    name: "Gravitational Constant",
-  },
-  m_1: {
-    name: "Mass of Earth",
-  },
   m_2: {
     name: "Mass of Person",
   },
+},
+```
+
+`name` is the label displayed to readers next to the symbol in the rendered formula. Notice that only `m_2` gets a label — the other symbols in the formula remain as plain notation.
+
+#### 5b: Give it a value with `default`
+
+Give the variable a starting value. **Add a `default` property to `m_2`:**
+
+```tsx
+variables: {
+  m_2: {
+    default: 80,
+    name: "Mass of Person",
+  },
+},
+```
+
+`default` sets the value that is displayed when the formula first renders.
+
+#### 5c: Add a second variable
+
+Now add `r` (Earth's radius) alongside `m_2`. **Add `r` to the `variables` object:**
+
+```tsx
+variables: {
+  m_2: {
+    default: 80,
+    name: "Mass of Person",
+  },
   r: {
+    default: 6.371e6,
     name: "Earth's radius",
   },
 },
 ```
 
-`name` is the label displayed to readers next to the symbol in the rendered formula.
+You can see the pattern: each variable you want to annotate gets an entry, but you choose which ones to include.
 
-#### 5b: Set a starting value with `default`
+#### 5d: Fill in the remaining variables
 
-Give each variable an initial numeric value. **Add a `default` property to `G`, `m_1`, `m_2`, and `r`:**
+Now add the rest of the variables for this formula. **Add `\\vec{F}`, `G`, and `m_1`:**
 
 ```tsx
 variables: {
@@ -121,11 +145,11 @@ variables: {
 },
 ```
 
-`default` sets the value that is displayed when the formula first renders. `\\vec{F}` has no `default` — its value will be computed by the semantics function later.
+`\\vec{F}` has no `default` — its value will be computed by the semantics function later.
 
-#### 5c: Control displayed digits with `sigFigs`
+#### 5e: Control displayed digits with `sigFigs`
 
-Limit how many significant figures are shown for a variable's value. **Add `sigFigs: 3` to `G`, `m_1`, and `r`:**
+Some values like `6.674e-11` have many digits. Limit how many significant figures are shown. **Add `sigFigs: 3` to `G`, `m_1`, and `r`:**
 
 ```tsx
 G: {
@@ -142,7 +166,7 @@ m_1: {
 
 `sigFigs: 3` displays `G` as `6.67 × 10⁻¹¹` (3 significant figures) rather than showing all available digits.
 
-#### 5d: Control decimal places with `precision`
+#### 5f: Control decimal places with `precision`
 
 Limit how many decimal places are shown for a variable's value. **Add `precision: 0` to `m_2`:**
 
