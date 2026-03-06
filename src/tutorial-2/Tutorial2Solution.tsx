@@ -57,7 +57,6 @@ const config: Config = {
       description: "Square the distance = " + latex(squared).sigfigs(4),
       labels: {
         r: r,
-        "r^2": null,
       },
     });
 
@@ -70,7 +69,8 @@ const config: Config = {
       labels: {
         "\\vec{F}": latex(vars["\\vec{F}"]).precision(2),
         G: vars.G,
-        "\\frac{m_1 m_2}{r^2}": latex(fraction).sigfigs(4),
+        "m_1 m_2": latex(product).sigfigs(4),
+        "r^2": latex(squared).sigfigs(3),
       },
     });
   },

@@ -80,11 +80,12 @@ Give readers text that explains what's happening at a step. **Add a `description
     description: "Square the distance",
     labels: {
       r: r,
+      "r^2": squared,
     },
   });
 ```
 
-`description` is text shown to the reader for this step. It supports inline LaTeX with `$...$` (e.g. `"Square the distance: $r^2$"`).
+`description` is text shown to the reader for this step. It supports inline LaTeX with `$...$` (e.g. `"Square the distance: $r^2$"`). Here, `"r^2"` is an expression label — it matches the `r^2` portion of the formula's LaTeX and displays the computed value next to it.
 
 ### Step 4: Highlight parts of the formula with expression labels
 
@@ -176,6 +177,7 @@ semantics: function ({ vars, step }) {
     description: "Multiply by $G$ to get force",
     labels: {
       "\\vec{F}": latex(force).sigfigs(3),
+      "r^2": latex(squared).sigfigs(3),
     },
   });
   vars["\\vec{F}"] = force;
