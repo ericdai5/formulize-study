@@ -2,7 +2,7 @@
 
 ### Why stepping?
 
-In Tutorial 1, you built an interactive formula where readers could drag variables and watch results update. But for multi-step calculations, seeing just the final answer isn't enough — readers need to understand *how* you get there.
+In Tutorial 1, you built an interactive formula where readers could drag variables and watch results update. But for multi-step calculations, seeing just the final answer isn't enough — readers need to understand _how_ you get there.
 
 Stepping solves this. Instead of showing everything at once, you guide readers through a calculation one piece at a time. At each step, parts of the formula highlight and labels appear to show intermediate values. Readers control the pace with navigation buttons.
 
@@ -11,6 +11,8 @@ Stepping solves this. Instead of showing everything at once, you guide readers t
 This tutorial walks you through how to add step-by-step walkthroughs to an existing formula. By the end, you'll be able to turn any multi-step calculation into a guided walkthrough.
 
 This tutorial builds on Tutorial 1. You should already know how to create a config with `formulas`, `variables`, and `semantics`.
+
+[Screen Recording 2026-03-06 at 7.28.11 AM.mov](attachment:5468354f-77bb-4334-828c-3bf8b9499268:Screen_Recording_2026-03-06_at_7.28.11_AM.mov)
 
 ### A note on feedback
 
@@ -62,46 +64,57 @@ semantics: function ({ vars, step }) {
       m_2: m2,
     },
   });
-
   // ... rest of the computation
 },
 ```
 
 Each `step()` call captures a snapshot that the reader can navigate to — think of it as a "pause here and explain" moment. The `labels` object controls what is shown at this step. Here, `m_1: m1` and `m_2: m2` are **variable labels** — they display the current values of those variables.
 
+### What if `step()` is called inside a loop?
+
+Every `step()` call creates a separate navigable step, regardless of whether it's written out individually or called inside a loop. If `step()` runs three times in a `for` loop, the reader gets three steps to navigate through — one for each iteration. The library doesn't deduplicate or merge calls; it simply collects them in order. This means you can use loops to generate steps dynamically — for example, showing each iteration of an algorithm, or building up a series term by term.
+
 ### Step 3: Add a description
 
 Give readers text that explains what's happening at a step. **Add a `description` to your second step, after squaring the distance:**
 
 ```tsx
-  var r = vars.r;
-  var squared = r * r;
-  step({
-    description: "Square the distance",
-    labels: {
-      r: r,
-      "r^2": squared,
-    },
-  });
+var r = vars.r;
+var squared = r * r;
+step({
+  description: "Square the distance",
+  labels: {
+    r: r,
+  },
+});
 ```
 
-`description` is text shown to the reader for this step. It supports inline LaTeX with `$...$` (e.g. `"Square the distance: $r^2$"`). Here, `"r^2"` is an expression label — it matches the `r^2` portion of the formula's LaTeX and displays the computed value next to it.
+`description` is text shown to the reader for this step. It supports inline LaTeX with `$...$` (e.g. `"Square the distance: $r^2$"`).
+
+### How does `description` differ from `labels`?
+
+`description` and `labels` serve different roles and appear in different places:
+
+- **`description`** is a sentence or phrase that appears _outside_ the formula. It explains the purpose of the step — the "why" or "what we're doing." Think of it as a caption or narration.
+- **`labels`** appear _on the formula_, attached to specific variables or expressions. They show concrete values or short annotations directly next to the relevant symbols — the "what the numbers are."
+
+Both can appear in the same step. A step can have a `description` only, `labels` only, or both together. Use `description` when you want to narrate or summarize what's happening ("Square the distance"), and use `labels` when you want to show specific values or highlight parts of the formula (`r: r`, `"r^2": squared`).
 
 ### Step 4: Highlight parts of the formula with expression labels
 
-So far, labels have used variable keys like `m_1` and `r` to show values on individual variables. But you can also highlight an entire *portion* of the formula by using an **expression scope** — a LaTeX substring that matches part of the formula.
+So far, labels have used variable keys like `m_1` and `r` to show values on individual variables. But you can also highlight an entire _portion_ of the formula by using an **expression scope** — a LaTeX substring that matches part of the formula.
 
 **Add an expression label to highlight $m_1 m_2$ in the formula:**
 
 ```tsx
-  var product = m1 * m2;
-  step({
-    labels: {
-      m_1: m1,
-      m_2: m2,
-      "m_1 m_2": "Multiply the two masses",
-    },
-  });
+var product = m1 * m2;
+step({
+  labels: {
+    m_1: m1,
+    m_2: m2,
+    "m_1 m_2": "Multiply the two masses",
+  },
+});
 ```
 
 The key `"m_1 m_2"` is not a variable key — it's a substring of the formula's LaTeX (`"\\vec{F} = G \\frac{m_1 m_2}{r^2}"`). Because it matches part of the formula, it highlights that portion and displays the label text next to it.
@@ -121,14 +134,14 @@ import { latex } from "math-notation";
 ```
 
 ```tsx
-  var product = m1 * m2;
-  step({
-    labels: {
-      m_1: m1,
-      m_2: m2,
-      "m_1 m_2": "Multiply the two masses = " + latex(product).sigfigs(3),
-    },
-  });
+var product = m1 * m2;
+step({
+  labels: {
+    m_1: m1,
+    m_2: m2,
+    "m_1 m_2": "Multiply the two masses = " + latex(product).sigfigs(3),
+  },
+});
 ```
 
 `latex(product).sigfigs(3)` formats the number with 3 significant figures in mathematical notation. You can concatenate it with a descriptive string to create readable labels.
@@ -136,7 +149,7 @@ import { latex } from "math-notation";
 For decimal places instead of significant figures, use `.precision()`:
 
 ```tsx
-latex(someValue).precision(2)  // e.g. "3.14"
+latex(someValue).precision(2); // e.g. "3.14"
 ```
 
 ### Step 6: Build out the remaining steps
@@ -177,7 +190,6 @@ semantics: function ({ vars, step }) {
     description: "Multiply by $G$ to get force",
     labels: {
       "\\vec{F}": latex(force).sigfigs(3),
-      "r^2": latex(squared).sigfigs(3),
     },
   });
   vars["\\vec{F}"] = force;
@@ -215,7 +227,7 @@ Called inside `semantics` to define computation steps. Each call creates a navig
 step({
   description: "Text with $LaTeX$ support",
   labels: {
-    "varKey": value,
+    varKey: value,
     "expression scope": "Label text",
   },
 });
@@ -228,26 +240,26 @@ step({
 
 ### Label keys
 
-| Key type             | What it does                                              | Example                               |
-| -------------------- | --------------------------------------------------------- | ------------------------------------- |
-| **Variable key**     | Shows the value on that variable's label                  | `m_1: m1` — displays the value of m_1 |
-| **Expression scope** | Highlights that portion of the formula and shows a label  | `"m_1 m_2": "Product"` — highlights $m_1 m_2$ |
+| Key type             | What it does                                             | Example                                       |
+| -------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| **Variable key**     | Shows the value on that variable's label                 | `m_1: m1` — displays the value of m_1         |
+| **Expression scope** | Highlights that portion of the formula and shows a label | `"m_1 m_2": "Product"` — highlights $m_1 m_2$ |
 
 ### Label values
 
-| Value type           | Example                           | Result                                 |
-| -------------------- | --------------------------------- | -------------------------------------- |
-| **Number**           | `m_1: vars.m_1`                   | Displays the number                    |
-| **Formatted number** | `latex(product).sigfigs(3)`       | Displays with specified sig figs       |
-| **String**           | `"Multiply the masses = " + ...`  | Displays text, supports inline LaTeX   |
-| **`null`**           | `"m_1 m_2": null`                 | Highlights expression, no label text   |
+| Value type           | Example                          | Result                               |
+| -------------------- | -------------------------------- | ------------------------------------ |
+| **Number**           | `m_1: vars.m_1`                  | Displays the number                  |
+| **Formatted number** | `latex(product).sigfigs(3)`      | Displays with specified sig figs     |
+| **String**           | `"Multiply the masses = " + ...` | Displays text, supports inline LaTeX |
+| **`null`**           | `"m_1 m_2": null`                | Highlights expression, no label text |
 
 ### The `latex()` helper
 
-| Method          | Description                      | Example                      |
-| --------------- | -------------------------------- | ---------------------------- |
-| `.sigfigs(n)`   | Format with n significant figures | `latex(value).sigfigs(3)`    |
-| `.precision(n)` | Format with n decimal places      | `latex(value).precision(2)`  |
+| Method          | Description                       | Example                     |
+| --------------- | --------------------------------- | --------------------------- |
+| `.sigfigs(n)`   | Format with n significant figures | `latex(value).sigfigs(3)`   |
+| `.precision(n)` | Format with n decimal places      | `latex(value).precision(2)` |
 
 ### New config options
 
