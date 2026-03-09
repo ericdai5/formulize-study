@@ -1,5 +1,15 @@
 # Welcome to your task environment!
 
-## Important: Where to Write Code
+## Tutorials
 
-**You should ONLY edit `src/App.tsx`.** Do not modify any other file in the project. All of the components you need are already imported at the top of `App.tsx`. Your task is to modify `App.tsx` to complete the given task.
+- **Tutorial 1:** `src/tutorial-1/Tutorial1.tsx`
+- **Tutorial 2:** `src/tutorial-2/Tutorial2.tsx`
+
+## Tasks
+
+- **Task 1:** `src/task/Task1.tsx`
+- **Task 2:** `src/task/Task2.tsx`
+
+## Important
+
+Only edit the file specified for each task. All necessary imports are already in place.
